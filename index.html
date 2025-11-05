@@ -316,56 +316,46 @@
       openPage('hub');
       cuteFooter.style.display = 'flex';
 
-      // ===== NOTES logic (text only, realtime, secure delete) =====
-      const notesBoard = document.getElementById('notesBoard');
-      const addBtn = document.getElementById('addNoteBtn');
-      const input  = document.getElementById('noteContent');
+// ===== NOTES logic (text only, realtime) =====
+const notesBoard = document.getElementById('notesBoard');
+const addBtn = document.getElementById('addNoteBtn');
+const input  = document.getElementById('noteContent');
 
-      addBtn.addEventListener('click', ()=>{
-        const v = input.value.trim();
-        if(!v) return;
-        db.ref(`rooms/${ROOM_ID}/notes`).push({
-          type:'text',
-          text:v,
-          time:Date.now(),
-          uid: CURRENT_UID || null
-        });
-        input.value='';
-      });
+// When adding a new note
+addBtn.addEventListener('click', ()=>{
+  const v = input.value.trim();
+  if(!v) return;
+  db.ref(`rooms/${ROOM_ID}/notes`).push({
+    type:'text',
+    text:v,
+    time:Date.now(),
+    uid: CURRENT_UID || null
+  });
+  input.value='';
+});
 
-      db.ref(`rooms/${ROOM_ID}/notes`).on('value', (snapshot) => {
-        notesBoard.innerHTML = '';
-        const data = snapshot.val();
-        if (!data) return;
+// Realtime listener for notes
+db.ref(`rooms/${ROOM_ID}/notes`).on('value', (snapshot) => {
+  notesBoard.innerHTML = '';
+  const data = snapshot.val();
+  if (!data) return;
 
-        const entries = Object.entries(data).sort((a,b)=>(b[1].time||0)-(a[1].time||0));
-        for (const [key, n] of entries) {
-          const card = document.createElement('div');
-          card.className = 'noteCard';
-          card.style.setProperty('--r', (Math.random()*0.8 - 0.4).toFixed(2));
-          const dateStr = new Date(n.time||Date.now()).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' });
+  const entries = Object.entries(data).sort((a,b)=>(b[1].time||0)-(a[1].time||0));
+  for (const [key, n] of entries) {
+    const card = document.createElement('div');
+    card.className = 'noteCard';
+    card.style.setProperty('--r', (Math.random()*0.8 - 0.4).toFixed(2));
+    const dateStr = new Date(n.time||Date.now()).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' });
 
-          const canDelete = n.uid && CURRENT_UID && n.uid === CURRENT_UID;
-          card.innerHTML = `
-            <span class="pin" aria-hidden="true"></span>
-            <div class="noteBody"><p>${escapeHtml(n.text||'')}</p></div>
-            <div class="noteFooter">
-              ${canDelete ? `<button class="delBtn" data-key="${key}">🗑 Delete</button>` : `<span></span>`}
-              <small>Added on ${dateStr}</small>
-            </div>`;
-          notesBoard.appendChild(card);
-        }
-      });
-
-      notesBoard.addEventListener('click', (e)=>{
-        const btn = e.target.closest('.delBtn');
-        if(!btn) return;
-        const key = btn.dataset.key;
-        if(!key) return;
-        if(confirm('Delete this note?')){
-          db.ref(`rooms/${ROOM_ID}/notes/${key}`).remove().catch(console.error);
-        }
-      });
+    card.innerHTML = `
+      <span class="pin" aria-hidden="true"></span>
+      <div class="noteBody"><p>${escapeHtml(n.text||'')}</p></div>
+      <div class="noteFooter">
+        <small>Added on ${dateStr}</small>
+      </div>`;
+    notesBoard.appendChild(card);
+  }
+});
 
       // ===== SONGS behavior (your actual files/covers) =====
       const songs = [
