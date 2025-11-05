@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Me & The love of my life's Website</title>
-  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;500;700;800&display=swap" rel="stylesheet">
   <style>
     :root{--bg1:#fff6fb;--accent:#ff6fa6;--muted:#7a3a4f;--paper:#fffecb}
     *{box-sizing:border-box}
@@ -42,7 +42,7 @@
     .floatingBg span{position:fixed;pointer-events:none;z-index:0;animation:float 6s ease-in-out infinite;opacity:0.4}
     @keyframes float{0%{transform:translateY(0)}50%{transform:translateY(-18px)}100%{transform:translateY(0)}}
 
-    /* ---- Notes (sticky + red pin + date + scroll) ---- */
+    /* ---- Notes ---- */
     .noteInputRow{display:flex;justify-content:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}
     .noteInputRow input{padding:10px;border-radius:10px;border:1px solid #d9c6cf;min-width:320px}
     .notesBoard{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:18px;background:linear-gradient(180deg,#fff0fb,#fff);padding:20px;border-radius:14px}
@@ -53,45 +53,23 @@
     .pin:after{content:"";position:absolute;inset:5px;width:8px;height:8px;background:#ff9a9a;border-radius:50%}
     .noteBody{flex:1;max-height:220px;overflow:auto}
     .noteFooter{margin-top:10px;padding-top:8px;border-top:1px dashed #e0cbd3;display:flex;justify-content:space-between;align-items:center}
-    .delBtn{border:none;background:#fff;color:#c0392b;font-weight:700;padding:6px 8px;border-radius:8px;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.1)}
-    .delBtn:hover{ background:#ffe6ea }
 
-    /* ---- Songs grid + cards (floating glass covers) ---- */
+    /* ---- Songs ---- */
     .songsGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:18px}
     @keyframes slowFloat{0%{transform:translateY(0)}50%{transform:translateY(-8px)}100%{transform:translateY(0)}}
     .songCard{position:relative;background:#fff;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,0.08);padding:12px;text-align:center;animation:slowFloat 8s ease-in-out infinite;animation-delay:var(--d,0s)}
-    .songCard:nth-child(2n){--d:1s}
-    .songCard:nth-child(3n){--d:2s}
-    .songCard:nth-child(4n){--d:3s}
-    .cover{
-      position:relative;width:150px;height:150px;border-radius:14px;overflow:hidden;margin:6px auto;
-      border:2px solid rgba(255,255,255,0.8);
-      box-shadow:0 8px 26px rgba(255,111,166,0.2), inset 0 0 0 1px rgba(255,255,255,0.5);
-      background:#fff;
-    }
+    .songCard:nth-child(2n){--d:1s}.songCard:nth-child(3n){--d:2s}.songCard:nth-child(4n){--d:3s}
+    .cover{position:relative;width:150px;height:150px;border-radius:14px;overflow:hidden;margin:6px auto;border:2px solid rgba(255,255,255,0.8);box-shadow:0 8px 26px rgba(255,111,166,0.2), inset 0 0 0 1px rgba(255,255,255,0.5);background:#fff}
     .cover img{width:100%;height:100%;object-fit:cover}
-    .cover:before{
-      content:"";position:absolute;left:-10%;top:-20%;width:140%;height:50%;
-      background:linear-gradient( to bottom, rgba(255,255,255,.65), rgba(255,255,255,0) );
-      transform:rotate(12deg);pointer-events:none;
-    }
+    .cover:before{content:"";position:absolute;left:-10%;top:-20%;width:140%;height:50%;background:linear-gradient(to bottom, rgba(255,255,255,.65), rgba(255,255,255,0));transform:rotate(12deg);pointer-events:none}
     .cover:after{content:"";position:absolute;inset:0;pointer-events:none;box-shadow:inset 0 0 30px rgba(255,255,255,.15)}
     .songTitle{font-weight:700;color:var(--muted)}
     .playBtn{margin-top:8px;padding:8px 12px;border-radius:10px;border:none;background:var(--accent);color:#fff;cursor:pointer}
 
-    /* ---- Custom audio player (pink, round, cute) ---- */
+    /* ---- Custom audio player ---- */
     .audioWrap{display:flex;justify-content:center}
-    .audioPlayer{
-      width:100%;max-width:720px;margin:16px auto 0;
-      background:linear-gradient(180deg,#fff,#fff7fb);
-      border:2px solid rgba(255,111,166,0.15);
-      border-radius:22px;padding:12px 16px;
-      box-shadow:0 12px 28px rgba(255,111,166,0.18);
-      display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center;
-    }
-    .ap-cover{
-      width:56px;height:56px;border-radius:50%;overflow:hidden;box-shadow:0 6px 16px rgba(255,111,166,.35);display:flex;align-items:center;justify-content:center;background:#fff
-    }
+    .audioPlayer{width:100%;max-width:720px;margin:16px auto 0;background:linear-gradient(180deg,#fff,#fff7fb);border:2px solid rgba(255,111,166,0.15);border-radius:22px;padding:12px 16px;box-shadow:0 12px 28px rgba(255,111,166,0.18);display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center}
+    .ap-cover{width:56px;height:56px;border-radius:50%;overflow:hidden;box-shadow:0 6px 16px rgba(255,111,166,.35);display:flex;align-items:center;justify-content:center;background:#fff}
     .ap-cover img{width:100%;height:100%;object-fit:cover}
     .ap-main{display:flex;flex-direction:column;gap:8px}
     .ap-title{font-weight:800;color:var(--muted);line-height:1}
@@ -99,43 +77,89 @@
     .ap-bar{height:10px;border-radius:999px;background:rgba(255,111,166,.18);position:relative;cursor:pointer;overflow:hidden}
     .ap-fill{position:absolute;left:0;top:0;height:100%;width:0%;background:var(--accent);border-radius:999px;box-shadow:0 2px 8px rgba(255,111,166,0.4)}
     .ap-ctrls{display:flex;gap:8px}
-    .ap-btn{
-      border:none;background:var(--accent);color:#fff;font-weight:800;
-      width:44px;height:44px;border-radius:50%;cursor:pointer;
-      box-shadow:0 6px 16px rgba(255,111,166,0.35);display:flex;align-items:center;justify-content:center;font-size:16px
-    }
+    .ap-btn{border:none;background:var(--accent);color:#fff;font-weight:800;width:44px;height:44px;border-radius:50%;cursor:pointer;box-shadow:0 6px 16px rgba(255,111,166,0.35);display:flex;align-items:center;justify-content:center;font-size:16px}
     .ap-btn:active{transform:scale(.98)}
 
-    /* ---- Photos (polaroid wall + categories) ---- */
+    /* ---- Photos ---- */
     .photosWall{background:linear-gradient(180deg,#fff0fb,#fff);border-radius:14px;padding:18px}
     .polaroidGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:22px;align-items:start}
-    .polaroid{
-      position:relative;width:100%;padding:12px 12px 38px;background:#fff;border-radius:10px;border:10px solid #fff;
-      box-shadow:0 14px 26px rgba(0,0,0,0.16), 0 2px 6px rgba(0,0,0,0.08);
-      transform:rotate(calc(-3deg + 6deg*var(--rot, .5)));transition:transform .22s;margin-top:var(--mt,0);
-    }
+    .polaroid{position:relative;width:100%;padding:12px 12px 38px;background:#fff;border-radius:10px;border:10px solid #fff;box-shadow:0 14px 26px rgba(0,0,0,0.16), 0 2px 6px rgba(0,0,0,0.08);transform:rotate(calc(-3deg + 6deg*var(--rot, .5)));transition:transform .22s;margin-top:var(--mt,0)}
     .polaroid:hover{transform:rotate(0deg) scale(1.02)}
     .polaroid img, .polaroid video{width:100%;height:190px;object-fit:cover;border-radius:6px}
     .polaroid .caption{position:absolute;left:0;right:0;bottom:6px;text-align:center;font-size:12px;color:#8b6b73}
-    .polaroid:nth-child(2n){--mt:6px}
-    .polaroid:nth-child(3n){--mt:18px}
-    .polaroid:nth-child(4n){--mt:10px}
-    .polaroid:nth-child(5n){--mt:24px}
-
+    .polaroid:nth-child(2n){--mt:6px}.polaroid:nth-child(3n){--mt:18px}.polaroid:nth-child(4n){--mt:10px}.polaroid:nth-child(5n){--mt:24px}
     .photoCats{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;margin:10px 0 18px}
     .photoBtn{width:240px;height:120px;border-radius:16px;background:linear-gradient(180deg,#fff,#fff0fb);display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 12px 36px rgba(0,0,0,0.06);cursor:pointer;transition:transform .2s;padding:10px}
     .photoBtn .label{font-weight:800}
     .photoBtn .desc{font-size:12px;color:var(--muted);max-width:210px;margin-top:4px}
     .photoBtn:hover{transform:scale(1.05)}
 
-    /* ---- Cute footer (Hello Kitty + lilies) – hub only ---- */
+    /* ---- Cute footer ---- */
     .cuteFooter{position:fixed;left:0;right:0;bottom:8px;display:none;align-items:center;justify-content:center;gap:14px;pointer-events:none;z-index:3}
     .kitty{width:64px;height:64px;animation:kittyWalk 10s linear infinite}
-    .lily{width:20px;height:20px;opacity:.9;animation:slowFloat 7s ease-in-out infinite}
     @keyframes kittyWalk{0%{transform:translateX(-40vw)}50%{transform:translateX(0)}100%{transform:translateX(40vw)}}
+
+    /* === Calendar (hidden until unlock) === */
+    #calendarBtn.hiddenBeforeUnlock,
+    #calShell.hiddenBeforeUnlock { display:none !important; }
+
+   .cal-shell{
+  --pink:#ff6fa6;
+  --ink:#b03050;
+  --paper:#fff9fc;
+  --pen:#e83434;
+}
+
+#calendarBtn {
+  position: fixed;
+  top: 18px;
+  right: 18px;
+  background: #fff; /* white base for contrast */
+  color: #ff6fa6;   /* your signature pink text color */
+  border: 2px solid rgba(255,111,166,0.4);
+  font-weight: 800;
+  border-radius: 50px;
+  padding: 10px 18px;
+  box-shadow: 0 6px 16px rgba(255,111,166,.25);
+  cursor: pointer;
+  z-index: 100;
+  transition: all 0.25s ease;
+}
+
+#calendarBtn:hover {
+  background: #ff6fa6;
+  color: #fff; /* text turns white on hover */
+  transform: scale(1.05);
+}
+
+
+    .cal-shell{position:fixed;top:70px;right:20px;width:640px;max-height:85vh;background:var(--paper);border:2px solid rgba(255,111,166,.25);border-radius:18px;box-shadow:0 10px 30px rgba(255,111,166,.25);padding:14px;overflow-y:auto;overflow-x:hidden;transform-origin:top right;opacity:0;pointer-events:none;transform:translateY(-20px) scale(.97);transition:all .45s cubic-bezier(.23,1,.32,1);z-index:90}
+    .cal-shell.show{opacity:1;pointer-events:auto;transform:translateY(0) scale(1)}
+    .cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+    .cal-title{font-weight:800;color:var(--pink);font-size:16px}
+    .nav-btn{border:none;background:var(--pink);color:#fff;width:32px;height:32px;border-radius:10px;cursor:pointer;box-shadow:0 5px 14px rgba(255,111,166,.35);font-weight:800}
+    .sticky-notes{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 10px}
+    .sticky{background:#fff7f9;border:1px dashed rgba(232,52,52,.35);color:var(--pen);padding:4px 6px;border-radius:8px;box-shadow:0 3px 10px rgba(255,111,166,.12);font-size:11px}
+    .year-container{position:relative}
+    .year-page{position:absolute;inset:0;transition:opacity .45s ease,transform .55s ease}
+    .year-page.hidden{opacity:0;pointer-events:none;transform:translateX(40%)}
+    .year-page.visible{opacity:1;pointer-events:auto;transform:translateX(0)}
+    .month-wrap{display:grid;grid-template-columns:repeat(3,minmax(180px,1fr));gap:10px;margin-bottom:10px}
+    .month{background:#fff;border:1px solid rgba(255,111,166,.18);border-radius:12px;padding:8px;box-shadow:0 6px 14px rgba(255,111,166,.12)}
+    .m-title{text-align:center;font-weight:800;font-size:12px;color:#b03050;margin-bottom:6px}
+    .grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+    .dow{font-size:10px;text-align:center;color:#7a3a4f}
+    .day{position:relative;aspect-ratio:1/1;border-radius:8px;background:linear-gradient(180deg,#fff,#fff7fb);display:flex;align-items:center;justify-content:center;font-weight:700;color:#7a3a4f;font-size:12px;border:1px solid rgba(255,111,166,.10)}
+    .day.other{opacity:.35}
+    .pen-circle::after{content:"";position:absolute;inset:3px;border-radius:10px;border:1.6px solid #e83434;transform:rotate(-2deg)}
+    .pen-underline::after{content:"";position:absolute;left:6px;right:6px;bottom:4px;height:1.6px;background:#e83434;transform:rotate(-2deg)}
+    .pen-x::after{content:"✗";position:absolute;color:#e83434;font-size:10px;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-8deg)}
+    .info{margin-top:12px;padding:10px;background:#fff;border:1px dashed rgba(255,111,166,.35);border-radius:12px;text-align:center;color:#7a3a4f}
+    .big{font-weight:800;color:#ff6fa6}
+    .tiny{font-size:12px;opacity:.9}
   </style>
 
-  <!-- Firebase SDKs (Compat for simple usage) -->
+  <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
@@ -143,6 +167,36 @@
 <body>
   <!-- animated sparkle layer -->
   <div class="floatingBg" id="floatingBg"></div>
+
+  <!-- Calendar UI (hidden until unlock) -->
+  <button id="calendarBtn" class="hiddenBeforeUnlock">📅 Calendar</button>
+
+  <div class="cal-shell hiddenBeforeUnlock" id="calShell">
+    <div class="cal-header">
+      <button class="nav-btn" id="prevBtn">‹</button>
+      <div class="cal-title" id="calTitle">Our Little Calendar — 2025</div>
+      <button class="nav-btn" id="nextBtn">›</button>
+    </div>
+
+    <div class="sticky-notes">
+      <div class="sticky">Jul 15 — First text since the big thing</div>
+      <div class="sticky">Jul 20 — The first time we met 💞</div>
+      <div class="sticky">Aug 19–22 — Our 2nd time hanging out (last day was in Aug 22)</div>
+      <div class="sticky">Dec 12 — My Wife’s birthdayyy</div>
+    </div>
+
+    <div class="year-container" id="yearContainer">
+      <div class="year-page visible" id="year2025"></div>
+      <div class="year-page hidden"  id="year2026"></div>
+    </div>
+
+    <div class="info">
+      <div class="big" id="sinceText">Day … since the last time we saw eachother irl</div>
+      <div class="tiny" id="countdown">Next day in …</div>
+      <div class="tiny">The next time that we might meet in hopefully <span class="big">Jul–Aug 2026</span></div>
+      <div class="tiny">Time zone: Your device time</div>
+    </div>
+  </div>
 
   <!-- Gate -->
   <div class="gateWrap" id="gateWrap">
@@ -161,9 +215,7 @@
 
   <!-- HUB footer decorations (hub only) -->
   <div class="cuteFooter" id="cuteFooter">
-    <img class="lily" src="assets/lilies.png" alt="lily" onerror="this.style.display='none'"/>
     <img class="kitty" src="assets/hello-kitty.gif" alt="Hello Kitty" onerror="this.style.display='none'"/>
-    <img class="lily" src="assets/lilies.png" alt="lily" onerror="this.style.display='none'"/>
   </div>
 
   <!-- Lightbox for photos/videos -->
@@ -177,11 +229,7 @@
   <script>
     // ===== Helper: safe HTML =====
     function escapeHtml(s){
-      return String(s)
-        .replace(/&/g,'&amp;')
-        .replace(/</g,'&lt;')
-        .replace(/>/g,'&gt;')
-        .replace(/\n/g,'<br>');
+      return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
     }
     function coverFallback(img){
       const svg = encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><rect width='100%' height='100%' fill='%23ffe1ee'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='18' fill='%23ff6fa6'>No cover</text></svg>`);
@@ -195,14 +243,6 @@
     const cuteFooter = document.getElementById('cuteFooter');
     function showGate(){ gateWrap.style.display='flex'; appShell.style.display='none'; cuteFooter.style.display='none'; }
     function showApp(){ gateWrap.style.display='none'; appShell.style.display='flex'; }
-    function unlock(){
-      const val = document.getElementById('codeField').value.trim();
-      if(val === SECRET){ showApp(); initHub(); }
-      else document.getElementById('gateMsg').textContent = 'Wrong code — try again.';
-    }
-    showGate();
-    document.getElementById('submitCode').addEventListener('click', unlock);
-    document.getElementById('codeField').addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); unlock(); } });
 
     // ===== Animated background =====
     const bg = document.getElementById('floatingBg');
@@ -256,7 +296,7 @@
           </div>
         </section>
         <main>
-          <!-- NOTES PAGE (Realtime + secure delete) -->
+          <!-- NOTES PAGE -->
           <section id="notes" class="page">
             <div class="backRow"><button class="backBtn" onclick="openPage('hub')">← Back</button></div>
             <div class="noteInputRow">
@@ -270,8 +310,6 @@
           <section id="songs" class="page">
             <div class="backRow"><button class="backBtn" onclick="openPage('hub')">← Back</button></div>
             <div class="songsGrid" id="songsGrid"></div>
-
-            <!-- Custom Audio Player -->
             <div class="audioWrap">
               <div id="ap" class="audioPlayer">
                 <div class="ap-cover"><img id="apCover" alt="cover" src="" onerror="this.src='songs/covers/3005.jpg'"></div>
@@ -287,12 +325,10 @@
                 </div>
               </div>
             </div>
-
-            <!-- Hidden native audio (we control it) -->
             <audio id="player" style="display:none"></audio>
           </section>
 
-          <!-- PHOTOS PAGE with two sub-sections -->
+          <!-- PHOTOS PAGE -->
           <section id="photos" class="page">
             <div class="backRow"><button class="backBtn" onclick="openPage('hub')">← Back</button></div>
             <div class="photoCats" id="photoCats">
@@ -316,48 +352,39 @@
       openPage('hub');
       cuteFooter.style.display = 'flex';
 
-// ===== NOTES logic (text only, realtime) =====
-const notesBoard = document.getElementById('notesBoard');
-const addBtn = document.getElementById('addNoteBtn');
-const input  = document.getElementById('noteContent');
+      // ===== NOTES logic =====
+      const notesBoard = document.getElementById('notesBoard');
+      const addBtn = document.getElementById('addNoteBtn');
+      const input  = document.getElementById('noteContent');
 
-// When adding a new note
-addBtn.addEventListener('click', ()=>{
-  const v = input.value.trim();
-  if(!v) return;
-  db.ref(`rooms/${ROOM_ID}/notes`).push({
-    type:'text',
-    text:v,
-    time:Date.now(),
-    uid: CURRENT_UID || null
-  });
-  input.value='';
-});
+      addBtn.addEventListener('click', ()=>{
+        const v = input.value.trim();
+        if(!v) return;
+        db.ref(`rooms/${ROOM_ID}/notes`).push({
+          type:'text', text:v, time:Date.now(), uid: CURRENT_UID || null
+        });
+        input.value='';
+      });
 
-// Realtime listener for notes
-db.ref(`rooms/${ROOM_ID}/notes`).on('value', (snapshot) => {
-  notesBoard.innerHTML = '';
-  const data = snapshot.val();
-  if (!data) return;
+      db.ref(`rooms/${ROOM_ID}/notes`).on('value', (snapshot) => {
+        notesBoard.innerHTML = '';
+        const data = snapshot.val();
+        if (!data) return;
+        const entries = Object.entries(data).sort((a,b)=>(b[1].time||0)-(a[1].time||0));
+        for (const [key, n] of entries) {
+          const card = document.createElement('div');
+          card.className = 'noteCard';
+          card.style.setProperty('--r', (Math.random()*0.8 - 0.4).toFixed(2));
+          const dateStr = new Date(n.time||Date.now()).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' });
+          card.innerHTML = `
+            <span class="pin" aria-hidden="true"></span>
+            <div class="noteBody"><p>${escapeHtml(n.text||'')}</p></div>
+            <div class="noteFooter"><small>Added on ${dateStr}</small></div>`;
+          notesBoard.appendChild(card);
+        }
+      });
 
-  const entries = Object.entries(data).sort((a,b)=>(b[1].time||0)-(a[1].time||0));
-  for (const [key, n] of entries) {
-    const card = document.createElement('div');
-    card.className = 'noteCard';
-    card.style.setProperty('--r', (Math.random()*0.8 - 0.4).toFixed(2));
-    const dateStr = new Date(n.time||Date.now()).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' });
-
-    card.innerHTML = `
-      <span class="pin" aria-hidden="true"></span>
-      <div class="noteBody"><p>${escapeHtml(n.text||'')}</p></div>
-      <div class="noteFooter">
-        <small>Added on ${dateStr}</small>
-      </div>`;
-    notesBoard.appendChild(card);
-  }
-});
-
-      // ===== SONGS behavior (your actual files/covers) =====
+      // ===== SONGS behavior =====
       const songs = [
         { file: 'songs/K.mp3',        cover:'songs/covers/K..jpg',       title:'K.',            artist:'Cigarettes After Sex' },
         { file: 'songs/RightOne.mp3', cover:'songs/covers/rightone.jpg', title:'The Right One', artist:'Sports' },
@@ -366,7 +393,6 @@ db.ref(`rooms/${ROOM_ID}/notes`).on('value', (snapshot) => {
       const songsGrid = document.getElementById('songsGrid');
       const player    = document.getElementById('player');
 
-      // Build song cards
       songs.forEach((s, idx)=>{
         const card = document.createElement('div');
         card.className = 'songCard';
@@ -379,7 +405,6 @@ db.ref(`rooms/${ROOM_ID}/notes`).on('value', (snapshot) => {
         songsGrid.appendChild(card);
       });
 
-      // Custom player state
       const ap = {
         audio: player,
         title: document.getElementById('apTitle'),
@@ -393,7 +418,6 @@ db.ref(`rooms/${ROOM_ID}/notes`).on('value', (snapshot) => {
         cover: document.getElementById('apCover'),
         i: -1
       };
-
       function fmt(t){ if(!isFinite(t)) return '0:00'; const m=Math.floor(t/60); const s=Math.floor(t%60); return `${m}:${s.toString().padStart(2,'0')}`; }
       function loadSong(i, autoplay=false){
         ap.i = i;
@@ -403,59 +427,23 @@ db.ref(`rooms/${ROOM_ID}/notes`).on('value', (snapshot) => {
         ap.cover.src = s.cover;
         if(autoplay){ ap.audio.play().then(()=>ap.play.textContent='❚❚').catch(()=>{}); }
       }
-      function playPause(){
-        if(ap.audio.paused){ ap.audio.play().then(()=>ap.play.textContent='❚❚'); }
-        else { ap.audio.pause(); ap.play.textContent='►'; }
-      }
+      function playPause(){ if(ap.audio.paused){ ap.audio.play().then(()=>ap.play.textContent='❚❚'); } else { ap.audio.pause(); ap.play.textContent='►'; } }
       ap.play.addEventListener('click', playPause);
       ap.prev.addEventListener('click', ()=>{ const ni = (ap.i<=0? songs.length-1 : ap.i-1); loadSong(ni, true); });
       ap.next.addEventListener('click', ()=>{ const ni = (ap.i>=songs.length-1? 0 : ap.i+1); loadSong(ni, true); });
-
-      ap.audio.addEventListener('timeupdate', ()=>{
-        ap.fill.style.width = ((ap.audio.currentTime/(ap.audio.duration||1))*100)+'%';
-        ap.now.textContent = fmt(ap.audio.currentTime);
-        ap.dur.textContent = fmt(ap.audio.duration);
-      });
-      ap.bar.addEventListener('click', (e)=>{
-        const r = ap.bar.getBoundingClientRect();
-        const ratio = (e.clientX - r.left) / r.width;
-        ap.audio.currentTime = ratio * (ap.audio.duration||0);
-      });
+      ap.audio.addEventListener('timeupdate', ()=>{ ap.fill.style.width = ((ap.audio.currentTime/(ap.audio.duration||1))*100)+'%'; ap.now.textContent = fmt(ap.audio.currentTime); ap.dur.textContent = fmt(ap.audio.duration); });
+      ap.bar.addEventListener('click', (e)=>{ const r = ap.bar.getBoundingClientRect(); const ratio = (e.clientX - r.left) / r.width; ap.audio.currentTime = ratio * (ap.audio.duration||0); });
       ap.audio.addEventListener('ended', ()=> ap.next.click());
 
-      // ===== PHOTOS behavior (two categories with polaroids) =====
+      // ===== PHOTOS behavior =====
       const photoSets = {
-        calls: [
-          'photos/calls/IMG1.jpg',
-          'photos/calls/IMG2.jpg',
-          'photos/calls/IMG3.jpg',
-          'photos/calls/IMG4.jpg',
-          'photos/calls/IMG5.jpg',
-          'photos/calls/IMG6.jpg',
-          'photos/calls/IMG7.jpg',
-          'photos/calls/IMG8.jpg',
-          'photos/calls/IMG9.JPG',
-          'photos/calls/IMG10.JPG',
-          'photos/calls/VID1.mp4',
-
-        ],
-        irl: [
-          'photos/realLife/IMG1.jpg',
-          'photos/realLife/IMG2.jpg',
-          'photos/realLife/IMG3.jpg',
-          'photos/realLife/IMG4.jpg',
-          'photos/realLife/IMG5.jpg',
-          'photos/realLife/IMG6.jpg',
-          'photos/realLife/VID1.mp4'
-        ]
+        calls: ['photos/calls/IMG1.jpg','photos/calls/IMG2.jpg','photos/calls/IMG3.jpg','photos/calls/IMG4.jpg','photos/calls/IMG5.jpg','photos/calls/IMG6.jpg','photos/calls/IMG7.jpg','photos/calls/IMG8.jpg','photos/calls/IMG9.JPG','photos/calls/IMG10.JPG','photos/calls/VID1.mp4'],
+        irl:   ['photos/realLife/IMG1.jpg','photos/realLife/IMG2.jpg','photos/realLife/IMG3.jpg','photos/realLife/IMG4.jpg','photos/realLife/IMG5.jpg','photos/realLife/IMG6.jpg','photos/realLife/VID1.mp4']
       };
-
       window.openPhotoCat = function(cat){
         document.getElementById('photoCats').style.display='none';
-        const wall = document.getElementById('photosWall');
-        wall.style.display='block';
-        const grid = document.getElementById('polaroidGrid');
-        grid.innerHTML = '';
+        const wall = document.getElementById('photosWall'); wall.style.display='block';
+        const grid = document.getElementById('polaroidGrid'); grid.innerHTML = '';
         (photoSets[cat]||[]).forEach((src,idx)=>{
           const p = document.createElement('div');
           p.className = 'polaroid';
@@ -464,7 +452,6 @@ db.ref(`rooms/${ROOM_ID}/notes`).on('value', (snapshot) => {
           p.innerHTML = isVideo
             ? `<span class="pin" aria-hidden="true"></span><video src="${src}" controls playsinline></video>`
             : `<span class="pin" aria-hidden="true"></span><img src="${src}" alt="memory ${idx+1}">`;
-
           const media = p.querySelector(isVideo ? 'video' : 'img');
           media.style.cursor = 'zoom-in';
           media.addEventListener('click', ()=> openLightbox(src, isVideo));
@@ -484,21 +471,13 @@ db.ref(`rooms/${ROOM_ID}/notes`).on('value', (snapshot) => {
       else { document.getElementById(p).style.display='block'; cuteFooter.style.display='none'; }
     }
 
-    // Lightbox helpers
+    // Lightbox
     function openLightbox(src, isVideo){
       const lb = document.getElementById('lightbox');
       const box = document.getElementById('lbContent');
       box.innerHTML = '';
-      if(isVideo){
-        const v = document.createElement('video');
-        v.src = src; v.controls = true; v.playsInline = true; v.style.maxWidth = '100%'; v.style.maxHeight = '70vh';
-        box.appendChild(v);
-      }else{
-        const img = new Image();
-        img.src = src; img.alt = 'memory';
-        img.style.maxWidth = '100%'; img.style.maxHeight = '70vh';
-        box.appendChild(img);
-      }
+      if(isVideo){ const v = document.createElement('video'); v.src = src; v.controls = true; v.playsInline = true; v.style.maxWidth = '100%'; v.style.maxHeight = '70vh'; box.appendChild(v); }
+      else{ const img = new Image(); img.src = src; img.alt = 'memory'; img.style.maxWidth = '100%'; img.style.maxHeight = '70vh'; box.appendChild(img); }
       lb.style.display = 'flex';
     }
     (function(){
@@ -508,6 +487,134 @@ db.ref(`rooms/${ROOM_ID}/notes`).on('value', (snapshot) => {
       lb.addEventListener('click', (e)=>{ if(e.target === lb) lb.style.display='none'; });
       document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') lb.style.display='none'; });
     })();
+
+    // ===== Calendar (only built after unlock) =====
+    function initLoveCalendar(){
+      const btn = document.getElementById('calendarBtn');
+      const cal = document.getElementById('calShell');
+      const titleEl = document.getElementById('calTitle');
+
+      // toggle
+      btn.onclick = () => cal.classList.toggle('show');
+
+      // builders
+      function daysInMonth(y,m){return new Date(y,m+1,0).getDate();}
+      function buildMonth(y,m){
+        const wrap=document.createElement('div');wrap.className='month';
+        const title=document.createElement('div');title.className='m-title';
+        title.textContent=new Date(y,m,1).toLocaleString('en-US',{month:'long'});wrap.appendChild(title);
+        const grid=document.createElement('div');grid.className='grid';
+        const DOW=["S","M","T","W","T","F","S"];
+        DOW.forEach(d=>{const e=document.createElement('div');e.className='dow';e.textContent=d;grid.appendChild(e);});
+        const first=new Date(y,m,1).getDay(), dim=daysInMonth(y,m), prevDim=daysInMonth(y,(m-1+12)%12);
+        for(let i=0;i<first;i++){const d=document.createElement('div');d.className='day other';d.textContent=prevDim-first+1+i;grid.appendChild(d);}
+        for(let d=1;d<=dim;d++){const cell=document.createElement('div');cell.className='day';cell.dataset.y=y;cell.dataset.m=m+1;cell.dataset.d=d;cell.textContent=d;grid.appendChild(cell);}
+        const cellsNeeded=7+first+dim, remainder=(Math.ceil(cellsNeeded/7)*7)-cellsNeeded;
+        for(let i=1;i<=remainder;i++){const d=document.createElement('div');d.className='day other';d.textContent=i;grid.appendChild(d);}
+        wrap.appendChild(grid);return wrap;
+      }
+      function buildYear(y){const grid=document.createElement('div');grid.className='month-wrap';for(let m=0;m<12;m++)grid.appendChild(buildMonth(y,m));return grid;}
+
+      // render pages
+      const y2025 = document.getElementById('year2025');
+      const y2026 = document.getElementById('year2026');
+      y2025.innerHTML=''; y2026.innerHTML='';
+      y2025.appendChild(buildYear(2025));
+      y2026.appendChild(buildYear(2026));
+
+      // container height
+      const container = document.getElementById('yearContainer');
+      function setContainerHeight(){
+        const visiblePage = document.querySelector('.year-page.visible');
+        container.style.height = visiblePage.scrollHeight + 'px';
+      }
+      setContainerHeight();
+      window.addEventListener('resize', ()=> requestAnimationFrame(setContainerHeight));
+
+      // nav
+      let currentYear = 2025;
+      function switchYear(delta){
+        const next = currentYear + delta;
+        if (next < 2025 || next > 2026) return;
+        document.querySelectorAll('.year-page').forEach(el => { el.classList.remove('visible'); el.classList.add('hidden'); });
+        const show = document.getElementById('year' + next);
+        show.classList.remove('hidden'); show.classList.add('visible');
+        currentYear = next;
+        titleEl.textContent = `Our Little Calendar — ${currentYear}`;
+        requestAnimationFrame(setContainerHeight);
+      }
+      document.getElementById('prevBtn').addEventListener('click', ()=>switchYear(-1));
+      document.getElementById('nextBtn').addEventListener('click', ()=>switchYear(1));
+
+      // helpers
+      function qDay(y,m1,d){
+        const page=document.getElementById('year'+y);
+        return [...page.querySelectorAll('.day')].find(el=>+el.dataset.y===y && +el.dataset.m===m1 && +el.dataset.d===d);
+      }
+
+      // marks 2025
+      (function mark2025(){
+        const c1=qDay(2025,7,15); if(c1) c1.classList.add('pen-circle');
+        const c2=qDay(2025,7,20); if(c2) c2.classList.add('pen-circle');
+        for(let d=19; d<=22; d++){ const el=qDay(2025,8,d); if(el) el.classList.add('pen-underline'); }
+        const today=new Date();
+        let y=2025,m=8,d=23;
+        while(true){
+          const endY=today.getFullYear(), endM=today.getMonth()+1, endD=today.getDate();
+          if(y>endY || (y===endY && (m>endM || (m===endM && d>endD)))) break;
+          const el=qDay(y,m,d); if(el) el.classList.add('pen-x');
+          const dim=daysInMonth(y,m-1); d++; if(d>dim){ d=1; m++; if(m>12){m=1;y++;} }
+        }
+      })();
+
+      // birthday 12/12 for 2025 & 2026
+      function markBirthday(y){
+        const b = qDay(y,12,12);
+        if (b) { b.classList.add('pen-circle'); b.title = "My Wife’s birthdayyyy 🎂"; }
+      }
+      markBirthday(2025);
+      markBirthday(2026);
+
+      // counters
+      function inclusiveDaysFrom(startY,startM1,startD){
+        const today=new Date();
+        const A=Date.UTC(startY,startM1-1,startD);
+        const B=Date.UTC(today.getFullYear(),today.getMonth(),today.getDate());
+        return Math.round((B-A)/86400000)+1;
+      }
+      function updateSince(){
+        const days=inclusiveDaysFrom(2025,8,22);
+        document.getElementById('sinceText').textContent=`Day ${days} since the last hangout`;
+      }
+      function updateCountdown(){
+        const now=new Date(); const pad=n=>String(n).padStart(2,'0');
+        document.getElementById('countdown').textContent=
+          `Next day in ${pad(23-now.getHours())}h:${pad(59-now.getMinutes())}m:${pad(59-now.getSeconds())}s`;
+      }
+      updateSince(); updateCountdown();
+      setInterval(()=>{updateSince();updateCountdown();},1000);
+    }
+
+    // ===== Unlock (reveals calendar and builds it) =====
+    function unlock(){
+      const val = document.getElementById('codeField').value.trim();
+      if(val === SECRET){
+        showApp();
+        initHub();
+        // reveal + build calendar AFTER unlocking
+        document.getElementById('calendarBtn').classList.remove('hiddenBeforeUnlock');
+        document.getElementById('calShell').classList.remove('hiddenBeforeUnlock');
+        initLoveCalendar();
+      } else {
+        document.getElementById('gateMsg').textContent = 'Wrong code — try again.';
+      }
+    }
+
+    showGate();
+    document.getElementById('submitCode').addEventListener('click', unlock);
+    document.getElementById('codeField').addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); unlock(); } });
+
+    // ===== Lightbox bindings already set above =====
 
     // ===== Minimal self-tests =====
     (function(){
@@ -522,5 +629,3 @@ db.ref(`rooms/${ROOM_ID}/notes`).on('value', (snapshot) => {
   </script>
 </body>
 </html>
-
-
