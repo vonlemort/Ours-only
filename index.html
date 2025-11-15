@@ -5,6 +5,10 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Me & The love of my life's Website</title>
   <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;500;700;800&display=swap" rel="stylesheet">
+
+
+
+
   <style>
     :root{--bg1:#fff6fb;--accent:#ff6fa6;--muted:#7a3a4f;--paper:#fffecb}
     *{box-sizing:border-box}
@@ -112,6 +116,9 @@
       transform:translateY(-20px) scale(.97);transition:all .45s cubic-bezier(.23,1,.32,1);z-index:90
     }
     .cal-shell.show{opacity:1;pointer-events:auto;transform:translateY(0) scale(1)}
+
+
+
     /* fully remove from layout when hidden, so it never intercepts clicks */
     #calShell:not(.show){display:none !important;pointer-events:none !important;}
     #calendarBtn {
@@ -136,6 +143,10 @@
 
     .year-container{position:relative}
 .year-page{
+
+
+
+
   /* NO absolute/inset here */
   display:none;               /* hidden by default */
   transition: opacity .25s ease;
@@ -423,6 +434,7 @@
         { file: 'songs/K.mp3',                cover:'songs/covers/K..jpg',            title:'K.',                 artist:'Cigarettes After Sex' },
         { file: 'songs/RightOne.mp3',         cover:'songs/covers/rightone.jpg',      title:'The Right One',      artist:'Sports' },
         { file: 'songs/3005.mp3',             cover:'songs/covers/3005.jpg',          title:'3005',               artist:'Childish Gambino' },
+        { file: 'songs/KISS.mp3',             cover:'songs/covers/KISS.JPG',          title:'Kiss Of Life',               artist:'Sade' },
         { file: 'songs/For the First Time.mp3', cover:'songs/covers/ForTheFirstTime.jpg', title:'For The First Time', artist:'Mac DeMarco' }
       ];
       const songsGrid = document.getElementById('songsGrid');
@@ -472,7 +484,7 @@
 
       // ===== PHOTOS behavior =====
       const photoSets = {
-        calls: ['photos/calls/IMG1.jpg','photos/calls/IMG2.jpg','photos/calls/IMG3.jpg','photos/calls/IMG4.jpg','photos/calls/IMG5.jpg','photos/calls/IMG6.jpg','photos/calls/IMG7.jpg','photos/calls/IMG8.jpg','photos/calls/IMG9.JPG','photos/calls/IMG10.JPG','photos/calls/VID1.mp4'],
+        calls: ['photos/calls/IMG1.jpg','photos/calls/IMG2.jpg','photos/calls/IMG3.jpg','photos/calls/IMG4.jpg','photos/calls/IMG5.jpg','photos/calls/IMG6.jpg','photos/calls/IMG7.jpg','photos/calls/IMG8.jpg','photos/calls/IMG9.JPG','photos/calls/IMG10.JPG','photos/calls/IMG11.JPG','photos/calls/IMG12.JPG','photos/calls/IMG13.JPG','photos/calls/IMG14.JPG','photos/calls/IMG15.JPG','photos/calls/IMG16.JPG','photos/calls/IMG17.JPG','photos/calls/VID1.mp4'],
         irl:   ['photos/realLife/IMG1.jpg','photos/realLife/IMG2.jpg','photos/realLife/IMG3.jpg','photos/realLife/IMG4.jpg','photos/realLife/IMG5.jpg','photos/realLife/IMG6.jpg','photos/realLife/VID1.mp4']
       };
       window.openPhotoCat = function(cat){
