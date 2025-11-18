@@ -6,9 +6,6 @@
   <title>Me & The love of my life's Website</title>
   <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;500;700;800&display=swap" rel="stylesheet">
 
-
-
-
   <style>
     :root{--bg1:#fff6fb;--accent:#ff6fa6;--muted:#7a3a4f;--paper:#fffecb}
     *{box-sizing:border-box}
@@ -29,13 +26,28 @@
     .app{display:none;position:relative;z-index:2;min-height:100vh;width:100%;flex-direction:column;align-items:center}
     .hub{min-height:70vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;text-align:center;padding-top:60px}
     .title{font-size:46px;color:var(--accent);margin:0;text-shadow:0 2px 0 #fff,0 10px 30px rgba(255,111,160,.25)}
+
+    /* peeking Hello Kitty in title */
+    .titlePeekWrap{
+      position:relative;
+      display:inline-block;
+      padding-left:34px; /* space so the W doesn’t get pushed by the gif */
+    }
+    .kittyPeekHead{
+      position:absolute;
+      left:-5px;          /* tweak these to line it up perfectly */
+      bottom:-6px;
+      height:55px;        /* size of the gif */
+      pointer-events:none;/* so clicks go through it */
+    }
+
     .subtitle{color:var(--muted);max-width:720px;margin:0}
     .bigBtns{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;margin-top:10px}
     .bigBtn{width:260px;height:180px;border-radius:18px;background:linear-gradient(180deg,#fff,#fff0fb);display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 12px 36px rgba(0,0,0,0.06);cursor:pointer;transition:transform .2s;position:relative;padding:12px}
     .bigBtn .label{font-weight:800;margin-top:6px}
     .bigBtn .desc{font-size:13px;color:var(--muted);max-width:220px;opacity:.9;margin-top:6px}
     .bigBtn:hover{transform:scale(1.05)}
-
+    
     main{width:100%;padding:22px 16px;display:flex;flex-direction:column;align-items:center}
     .page{display:none;min-height:60vh;width:100%;max-width:1100px}
     .page.active{display:block}
@@ -117,8 +129,6 @@
     }
     .cal-shell.show{opacity:1;pointer-events:auto;transform:translateY(0) scale(1)}
 
-
-
     /* fully remove from layout when hidden, so it never intercepts clicks */
     #calShell:not(.show){display:none !important;pointer-events:none !important;}
     #calendarBtn {
@@ -142,26 +152,21 @@
     }
 
     .year-container{position:relative}
-.year-page{
+    .year-page{
+      /* NO absolute/inset here */
+      display:none;               /* hidden by default */
+      transition: opacity .25s ease;
+      opacity:0;
+    }
+    .year-page.visible{
+      display:block;
+      opacity:1;
+    }
+    .year-page.hidden{
+      display:none;
+      opacity:0;
+    }
 
-
-
-
-  /* NO absolute/inset here */
-  display:none;               /* hidden by default */
-  transition: opacity .25s ease;
-  opacity:0;
-}
-
-.year-page.visible{
-  display:block;
-  opacity:1;
-}
-
-.year-page.hidden{
-  display:none;
-  opacity:0;
-}
     .month-wrap{display:grid;grid-template-columns:repeat(3,minmax(180px,1fr));gap:10px;margin-bottom:10px}
     .month{background:#fff;border:1px solid rgba(255,111,166,.18);border-radius:12px;padding:8px;box-shadow:0 6px 14px rgba(255,111,166,.12)}
     .m-title{text-align:center;font-weight:800;font-size:12px;color:#b03050;margin-bottom:6px}
@@ -239,7 +244,7 @@
     <div class="gateCard">
       <div class="lockBig">🔒</div>
       <h2>Enter our secret code</h2>
-      <p style="color:var(--muted)">Only Khadeja and Saleh know the secret code</p>
+      <p style="color:var(--muted)">Only Khadeja and Saleh know the secret codeee</p>
       <input id="codeField" class="codeInput" placeholder="Type the secret code..." autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">
       <button id="submitCode" class="btn">Unlock Love 💞</button>
       <p id="gateMsg" style="color:crimson;margin-top:10px"></p>
@@ -323,12 +328,17 @@
     function initHub(){
       appShell.innerHTML = `
         <section class="hub">
-          <h1 class="title">Welcome, my love 💞</h1>
+          <h1 class="title">
+            <span class="titlePeekWrap">
+              <img src="assets/hello-kitty-peek.gif" alt="" class="kittyPeekHead">
+              <span>Welcome my love 💞</span>
+            </span>
+          </h1>
           <p class="subtitle">Check these sections Mon Amour ✨</p>
           <div class="bigBtns">
             <div class="bigBtn" onclick="openPage('notes')">💌
               <div class="label">Notes</div>
-              <div class="desc">Write anything you desire to tell me here, Khadeja my lovee</div>
+              <div class="desc">Write anything you want to tell me here Khadeja, the love of my life</div>
             </div>
             <div class="bigBtn" onclick="openPage('songs')">🎵
               <div class="label">Songs</div>
@@ -434,7 +444,7 @@
         { file: 'songs/K.mp3',                cover:'songs/covers/K..jpg',            title:'K.',                 artist:'Cigarettes After Sex' },
         { file: 'songs/RightOne.mp3',         cover:'songs/covers/rightone.jpg',      title:'The Right One',      artist:'Sports' },
         { file: 'songs/3005.mp3',             cover:'songs/covers/3005.jpg',          title:'3005',               artist:'Childish Gambino' },
-        { file: 'songs/KISS.mp3',             cover:'songs/covers/KISS.JPG',          title:'Kiss Of Life',               artist:'Sade' },
+        { file: 'songs/KISS.mp3',             cover:'songs/covers/KISS.JPG',          title:'Kiss Of Life',       artist:'Sade' },
         { file: 'songs/For the First Time.mp3', cover:'songs/covers/ForTheFirstTime.jpg', title:'For The First Time', artist:'Mac DeMarco' }
       ];
       const songsGrid = document.getElementById('songsGrid');
@@ -499,7 +509,7 @@
           p.innerHTML = isVideo
             ? `<span class="pin" aria-hidden="true"></span><video src="${src}" playsinline muted></video>`
             : `<span class="pin" aria-hidden="true"></span><img src="${src}" alt="memory ${idx+1}">`;
-          // Click the whole card (fixes rightmost click issue)
+          // Click the whole card
           p.addEventListener('click', ()=> openLightbox(src, isVideo));
           grid.appendChild(p);
         });
@@ -589,23 +599,22 @@
       y2025.appendChild(buildYear(2025));
       y2026.appendChild(buildYear(2026));
 
-      
       // nav
       let currentYear = 2025;
-function switchYear(delta){
-  const next = currentYear + delta;
-  if (next < 2025 || next > 2026) return;
-  document.querySelectorAll('.year-page').forEach(el => {
-    el.classList.remove('visible');
-    el.classList.add('hidden');
-  });
-  const show = document.getElementById('year' + next);
-  show.classList.remove('hidden');
-  show.classList.add('visible');
-  currentYear = next;
-  titleEl.textContent = `Our Little Calendar — ${currentYear}`;
-  renderMarks(); // refresh tags when changing year
-}
+      function switchYear(delta){
+        const next = currentYear + delta;
+        if (next < 2025 || next > 2026) return;
+        document.querySelectorAll('.year-page').forEach(el => {
+          el.classList.remove('visible');
+          el.classList.add('hidden');
+        });
+        const show = document.getElementById('year' + next);
+        show.classList.remove('hidden');
+        show.classList.add('visible');
+        currentYear = next;
+        titleEl.textContent = `Our Little Calendar — ${currentYear}`;
+        renderMarks(); // refresh tags when changing year
+      }
 
       document.getElementById('prevBtn').addEventListener('click', ()=>switchYear(-1));
       document.getElementById('nextBtn').addEventListener('click', ()=>switchYear(1));
