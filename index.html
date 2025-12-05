@@ -4,12 +4,18 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Me & The love of my life's Website</title>
-  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;500;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;500;700;800&family=Press+Start+2P&display=swap" rel="stylesheet">
 
   <style>
     :root{--bg1:#fff6fb;--accent:#ff6fa6;--muted:#7a3a4f;--paper:#fffecb}
     *{box-sizing:border-box}
-    html,body{height:100%;margin:0;font-family:'Quicksand',system-ui,Arial;background:linear-gradient(180deg,var(--bg1),#fff);overflow-x:hidden}
+    html,body{
+      height:100%;
+      margin:0;
+      font-family:'Quicksand',system-ui,Arial;
+      background:linear-gradient(180deg,var(--bg1),#fff);
+      overflow-x:hidden;
+    }
 
     /* ---- Gate ---- */
     .gateWrap{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,#fff0fb,#fff);z-index:80}
@@ -27,18 +33,17 @@
     .hub{min-height:70vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;text-align:center;padding-top:60px}
     .title{font-size:46px;color:var(--accent);margin:0;text-shadow:0 2px 0 #fff,0 10px 30px rgba(255,111,160,.25)}
 
-    /* peeking Hello Kitty in title */
     .titlePeekWrap{
       position:relative;
       display:inline-block;
-      padding-left:34px; /* space so the W doesn’t get pushed by the gif */
+      padding-left:34px;
     }
     .kittyPeekHead{
       position:absolute;
-      left:-5px;          /* tweak these to line it up perfectly */
+      left:-5px;
       bottom:-6px;
-      height:55px;        /* size of the gif */
-      pointer-events:none;/* so clicks go through it */
+      height:55px;
+      pointer-events:none;
     }
 
     .subtitle{color:var(--muted);max-width:720px;margin:0}
@@ -55,7 +60,7 @@
     .backBtn{margin:8px 0 18px;padding:10px 16px;border:none;border-radius:12px;background:var(--accent);color:white;cursor:pointer;transition:transform .2s}
     .backBtn:hover{transform:scale(1.05)}
 
-    /* ---- Animated background ---- */
+    /* ---- Animated background hearts ---- */
     .floatingBg span{position:fixed;pointer-events:none;z-index:0;animation:float 6s ease-in-out infinite;opacity:0.4}
     @keyframes float{0%{transform:translateY(0)}50%{transform:translateY(-18px)}100%{transform:translateY(0)}}
 
@@ -129,7 +134,6 @@
     }
     .cal-shell.show{opacity:1;pointer-events:auto;transform:translateY(0) scale(1)}
 
-    /* fully remove from layout when hidden, so it never intercepts clicks */
     #calShell:not(.show){display:none !important;pointer-events:none !important;}
     #calendarBtn {
       position: fixed; top: 18px; right: 18px;
@@ -153,8 +157,7 @@
 
     .year-container{position:relative}
     .year-page{
-      /* NO absolute/inset here */
-      display:none;               /* hidden by default */
+      display:none;
       transition: opacity .25s ease;
       opacity:0;
     }
@@ -181,7 +184,6 @@
     .big{font-weight:800;color:#ff6fa6}
     .tiny{font-size:12px;opacity:.9}
 
-    /* === Calendar tags (chips + circle mark + tooltip) === */
     .chips{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 12px}
     .chip{display:inline-flex;align-items:center;gap:8px;background:#fff;border:1px dashed rgba(232,52,52,.35);color:var(--muted);padding:6px 10px;border-radius:999px;font-size:12px;box-shadow:0 3px 10px rgba(255,111,166,.12)}
     .chip .x{border:none;background:transparent;color:#c03636;font-weight:900;cursor:pointer}
@@ -189,6 +191,371 @@
     .day[data-label]:hover::before{
       content:attr(data-label); position:absolute; bottom:100%; left:50%; transform:translateX(-50%);
       background:#fff;border:1px dashed rgba(232,52,52,.4);color:#e83434;padding:4px 6px;border-radius:8px;font-size:11px;white-space:nowrap;box-shadow:0 6px 16px rgba(255,111,166,.12)
+    }
+
+    /* ===== Birthday Cake FULLSCREEN overlay ===== */
+    .cakeOverlay{
+      position:fixed;
+      inset:0;
+      z-index:200;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      background:
+        radial-gradient(circle at top,
+          rgba(10,10,10,0.98) 0,
+          rgba(5,5,5,0.9) 45%,
+          rgba(0,0,0,0.7) 100%);
+      backdrop-filter:blur(2px);
+      opacity:0;
+      transition:opacity .7s ease;
+    }
+    .cakeOverlay.show{
+      display:flex;
+      opacity:1;
+    }
+    .cakeOverlay.fadeOut{
+      opacity:0;
+    }
+
+    /* THIS centers either cakeStage or cardStage in the middle */
+    .cakeOverlayInner{
+      position:relative;
+      width:100%;
+      height:100%;
+      padding:0 18px;
+      color:#fff;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      flex-direction:column;
+    }
+
+    @keyframes cakeFloat{
+      0%{transform:translateY(0);}
+      50%{transform:translateY(-8px);}
+      100%{transform:translateY(0);}
+    }
+
+    .cakeStage{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:12px;
+      transition:opacity .6s ease, transform .6s ease;
+    }
+    .cakeStage.hidden{
+      opacity:0;
+      transform:translateY(-12px);
+      pointer-events:none;
+    }
+
+    /* CARD STAGE – centered same way as cake */
+
+    .cardStage{
+  display:none;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:18px;
+  opacity:0;
+  transform:translateY(-240px);   /* <-- LIFT CARD UP */
+  transition:opacity .6s ease, transform .6s ease;
+}
+  
+
+
+  
+.cardStage.show{
+  display:flex;
+  opacity:1;
+}
+
+    .ecard{
+      display:flex;
+      flex-wrap:nowrap;
+      max-width:820px;
+      width:90%;
+      min-height:380px;
+      border-radius:22px;
+      overflow:hidden;
+      background:#fff;
+      box-shadow:
+        0 18px 40px rgba(0,0,0,.55),
+        0 0 40px rgba(255,111,166,.65),
+        0 0 80px rgba(255,111,166,.35);
+    }
+
+    .cakeImgWrap{
+      position:relative;
+      display:inline-block;
+      animation:cakeFloat 5s ease-in-out infinite;
+    }
+    .cakeImg{
+      width:260px;
+      max-width:80vw;
+      height:auto;
+      image-rendering:pixelated;
+    }
+
+    .cake17{
+      position:absolute;
+      left:50%;
+      top:13%;
+      transform:translate(-50%,-50%);
+      display:flex;
+      gap:4px;
+      z-index:2;
+    }
+
+    .cake17::before{
+      content:"";
+      position:absolute;
+      left:50%;
+      top:0;
+      transform:translateX(-50%);
+      width:96px;
+      height:46px;
+      background:#ff8bb0;
+      border-radius:10px 10px 6px 6px;
+      box-shadow:
+        0 0 0 2px #000,
+        0 4px 0 rgba(0,0,0,.7);
+      z-index:-1;
+    }
+
+    .digit{
+      position:relative;
+      font-family:"Press Start 2P",system-ui,monospace;
+      font-size:24px;
+      color:#ffecec;
+      padding:6px 8px 10px;
+      background:#4db3ff;
+      border-radius:6px 6px 3px 3px;
+      box-shadow:
+        0 0 0 3px #000,
+        3px 3px 0 #1d6aa1,
+        6px 6px 0 #000;
+      text-shadow:1px 1px 0 #000,2px 2px 0 #000;
+    }
+
+    .digit::after{
+      content:"";
+      position:absolute;
+      top:-9px;
+      left:50%;
+      transform:translateX(-50%);
+      width:4px;
+      height:9px;
+      border-radius:2px;
+      background:#111;
+    }
+
+    .digit::before{
+      content:"";
+      position:absolute;
+      top:-22px;
+      left:50%;
+      transform:translateX(-50%);
+      width:14px;
+      height:22px;
+      border-radius:50% 50% 45% 45%;
+      background:
+        radial-gradient(circle at 50% 30%, #fffbe0 0, #ffd76b 40%, #ff9a3b 80%, rgba(255,154,59,0) 100%);
+      filter:drop-shadow(0 0 6px rgba(255,230,140,.9))
+             drop-shadow(0 0 10px rgba(255,180,80,.8));
+      animation:flicker .26s infinite alternate;
+      transform-origin:50% 100%;
+    }
+
+    @keyframes flicker{
+      0%{
+        transform:translate(-50%,0) scale(1) skewX(-2deg);
+      }
+      100%{
+        transform:translate(-51%,-2px) scale(1.12) skewX(3deg);
+      }
+    }
+
+    @keyframes flameBlow{
+      0%{
+        transform:translate(-50%,-1px) scale(1) skewX(-4deg);
+      }
+      100%{
+        transform:translate(-65%,-3px) scale(1.05) skewX(-16deg);
+      }
+    }
+    .cakeOverlay.blowing .digit::before{
+      animation:flameBlow .18s infinite alternate;
+    }
+
+    .cakeOverlay.blowed .digit::before{
+      animation:none;
+      opacity:0;
+      transform:translate(-50%,-8px) scale(0.2);
+      filter:blur(1px);
+      transition:
+        opacity .35s ease-out,
+        transform .35s ease-out,
+        filter .35s ease-out;
+    }
+
+    @keyframes smokeRise{
+      0%{
+        transform:translate(-50%,0) scale(0.7);
+        opacity:.9;
+      }
+      100%{
+        transform:translate(-50%,-80px) scale(1.5);
+        opacity:0;
+      }
+    }
+
+    .cakeImgWrap::after{
+      content:"";
+      position:absolute;
+      left:50%;
+      top:15%;
+      width:50px;
+      height:50px;
+      border-radius:50%;
+      background:radial-gradient(circle,
+        rgba(255,255,255,.95) 0,
+        rgba(210,210,210,.5) 40%,
+        rgba(180,180,180,0) 75%);
+      opacity:0;
+      pointer-events:none;
+    }
+
+    .cakeOverlay.blowed .cakeImgWrap::after{
+      opacity:1;
+      animation:smokeRise 1.4s ease-out forwards;
+    }
+
+    .cakeText{
+      margin-top:18px;
+      font-size:14px;
+      color:#ffeaf3;
+    }
+
+    /* E-card halves */
+    .ecard-half{
+      flex:1 1 260px;
+      min-height:260px;
+    }
+    .ecard-left{
+      position:relative;
+      background:var(--accent);
+      color:#fff;
+    }
+    .ecard-confetti{
+      position:absolute;
+      inset:0;
+      background-image:
+        radial-gradient(circle at 20% 10%, #ffd447 2px, transparent 3px),
+        radial-gradient(circle at 80% 30%, #7ee5ff 2px, transparent 3px),
+        radial-gradient(circle at 40% 70%, #ff7bb6 2px, transparent 3px),
+        radial-gradient(circle at 65% 85%, #7cff92 2px, transparent 3px);
+      opacity:.7;
+      pointer-events:none;
+    }
+    .ecard-left-inner{
+      position:relative;
+      padding:32px 24px 26px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      z-index:1;
+      align-items:center;
+      text-align:center;
+    }
+    .ecard-happy{
+      font-size:22px;
+      font-weight:800;
+      letter-spacing:2px;
+    }
+    .ecard-birthday{
+      font-size:30px;
+      font-weight:900;
+    }
+    .ecard-name{
+      margin-top:8px;
+      font-size:24px;
+      font-weight:900;
+    }
+    .ecard-left-gif-wrap{
+      margin-top:18px;
+      padding:8px 10px;
+      border-radius:16px;
+      background:rgba(0,0,0,0.12);
+      box-shadow:0 10px 25px rgba(0,0,0,.45);
+    }
+    .ecard-left-gif-wrap img{
+      max-width:130px;
+      height:auto;
+      display:block;
+      border-radius:16px;
+    }
+
+    .ecard-right{
+      background:#f5f7ff;
+      color:#4a3191;
+      padding:26px 24px 22px;
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+    }
+    .ecard-heading{
+      font-size:20px;
+      font-weight:800;
+      text-align:center;
+    }
+    .ecard-message{
+      font-size:14px;
+      line-height:1.5;
+      max-height:220px;
+      overflow-y:auto;
+    }
+
+    #cardDoneBtn{
+      margin-top:18px;
+      padding:10px 22px;
+      border-radius:999px;
+      border:none;
+      background:var(--accent);
+      color:#fff;
+      font-weight:800;
+      cursor:pointer;
+      box-shadow:0 10px 24px rgba(255,111,166,.6);
+    }
+    #cardDoneBtn:hover{
+      transform:translateY(-1px);
+    }
+
+    #confettiLayer{
+      position:fixed;
+      inset:0;
+      overflow:hidden;
+      pointer-events:none;
+      z-index:201;
+    }
+    .confettiPiece{
+      position:absolute;
+      top:0;
+      width:6px;
+      height:10px;
+      background:var(--c,#ff6fa6);
+      border-radius:1px;
+      opacity:.95;
+      animation:confettiFall var(--t,4s) linear infinite;
+    }
+    @keyframes confettiFall{
+      0%{
+        transform:translate3d(0,-100%,0) rotate(0deg);
+      }
+      100%{
+        transform:translate3d(0,110vh,0) rotate(360deg);
+      }
     }
   </style>
 
@@ -211,7 +578,6 @@
       <button class="nav-btn" id="nextBtn" aria-label="Next year">›</button>
     </div>
 
-    <!-- Tag input row -->
     <div class="tagForm">
       <input type="date" id="tagDate">
       <input type="text" id="tagLabel" placeholder="Write a tag...">
@@ -239,6 +605,62 @@
     </div>
   </div>
 
+  <!-- Birthday cake overlay -->
+  <div id="cakeOverlay" class="cakeOverlay">
+    <div id="confettiLayer"></div>
+    <div class="cakeOverlayInner">
+
+      <!-- STAGE 1: Cake -->
+      <div id="cakeStage" class="cakeStage">
+        <div class="cakeImgWrap">
+          <img src="assets/pixel-cake.png" alt="Birthday Cake" class="cakeImg">
+          <div class="cake17">
+            <span class="digit">1</span>
+            <span class="digit">7</span>
+          </div>
+        </div>
+
+        <h2 style="margin-top:22px;margin-bottom:6px;">Happy 17th Birthday my gorgeous beautiful beautiful wife</h2>
+        <p id="blowHint" class="cakeText">Hold the button to blow out the candle</p>
+        <button id="blowBtn" class="btn">Hold to blow the candle</button>
+      </div>
+
+      <!-- STAGE 2: Birthday card -->
+      <div id="cardStage" class="cardStage">
+        <div class="ecard">
+          <div class="ecard-half ecard-left">
+            <div class="ecard-confetti"></div>
+            <div class="ecard-left-inner">
+              <div class="ecard-happy">HAPPY</div>
+              <div class="ecard-birthday">BIRTHDAY</div>
+              <div class="ecard-name">KHADEJA!</div>
+
+              <div class="ecard-left-gif-wrap">
+                <img src="assets/HBDAY.gif" alt="Hello Kitty birthday">
+              </div>
+            </div>
+          </div>
+          <div class="ecard-half ecard-right">
+            <div class="ecard-heading">
+              Happy Birthday to the best person in this world! 
+            </div>
+            <div class="ecard-message">
+            I’m so thankful that I got to be a part of your birthday this year, it felt like a blessing I don’t ever want to take for granted. I pray that life keeps leading us toward each other, toward a future where we build a home together, where marriage and peace and love aren’t dreams but our reality!!
+I can’t wait for the moment I see you againnn to finally hold youu and hug youuu, and to give you the letters that I made for your birthday.  To  also feel that calm I only get when you’re near me. You’ve become such a beautiful part of my life. You are gentle, thoughtful, and caring in ways that stay with me even after we hang up the phone after us calling, No one could ever take your place. You’re one of one
+I genuinely want to see you live a life full of joy, and everything you deserve. Loving you feels natural, like something I was meant to do. You’re the only person who carries my heart so completely.
+I hope the years ahead are ours, years where we grow side by side, create memories that feel like home, and become the best versions of ourselves together. You are everything I could ever ask for.
+
+Happy birthday, my love. I’m grateful for you more than these words can ever show.
+            </div>
+          </div>
+        </div>
+
+        <button id="cardDoneBtn">Done</button>
+      </div>
+
+    </div>
+  </div>
+
   <!-- Gate -->
   <div class="gateWrap" id="gateWrap">
     <div class="gateCard">
@@ -254,12 +676,12 @@
   <!-- App shell -->
   <div class="app" id="appShell"></div>
 
-  <!-- HUB footer decorations (hub only) -->
+  <!-- HUB footer decorations -->
   <div class="cuteFooter" id="cuteFooter">
     <img class="kitty" src="assets/hello-kitty.gif" alt="Hello Kitty" onerror="this.style.display='none'"/>
   </div>
 
-  <!-- Lightbox for photos/videos -->
+  <!-- Lightbox -->
   <div id="lightbox" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);backdrop-filter:blur(2px);z-index:120;align-items:center;justify-content:center;padding:16px">
     <div id="lightboxInner" style="max-width:90vw;max-height:90vh;background:#fff;border:12px solid #fff;border-radius:12px;box-shadow:0 30px 60px rgba(0,0,0,.25);position:relative;padding:10px 10px 36px">
       <button id="lbClose" style="position:absolute;right:8px;top:8px;border:none;background:var(--accent);color:#fff;border-radius:10px;padding:6px 10px;cursor:pointer">Close</button>
@@ -268,7 +690,6 @@
   </div>
 
   <script>
-    // ===== Helpers =====
     function escapeHtml(s){
       return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
     }
@@ -283,7 +704,11 @@
       return `${t.getFullYear()}-${m}-${d}`;
     }
 
-    // ===== Lock screen =====
+    const CAKE_STORAGE_KEY = 'khadeja_cake_2025_seen';
+    const BDAY_DATE = '2025-12-12';
+    let FORCE_CAKE_PREVIEW = false;
+    let cakeInitDone = false;
+
     const SECRET = 'saleh';
     const gateWrap = document.getElementById('gateWrap');
     const appShell = document.getElementById('appShell');
@@ -291,7 +716,6 @@
     function showGate(){ gateWrap.style.display='flex'; appShell.style.display='none'; cuteFooter.style.display='none'; }
     function showApp(){ gateWrap.style.display='none'; appShell.style.display='flex'; }
 
-    // ===== Animated background =====
     const bg = document.getElementById('floatingBg');
     const symbols = ['💖','💞','💘','✨','🌟','💫'];
     for(let i=0;i<80;i++){
@@ -304,7 +728,6 @@
       bg.appendChild(s);
     }
 
-    // ===== Firebase init =====
     const firebaseConfig = {
       apiKey: "AIzaSyD7Rt9RFyk6DHsaqB_2KIv0QBGPGXYrWPo",
       authDomain: "notes-8d314.firebaseapp.com",
@@ -320,11 +743,8 @@
     firebase.auth().onAuthStateChanged(user => { if (user) CURRENT_UID = user.uid; });
     const db = firebase.database();
     const ROOM_ID = 'for-khadeja';
-
-    // Calendar tags path
     const TAGS_REF = db.ref(`rooms/${ROOM_ID}/calendarTags`);
 
-    // ===== Build Hub + Pages =====
     function initHub(){
       appShell.innerHTML = `
         <section class="hub">
@@ -351,7 +771,6 @@
           </div>
         </section>
         <main>
-          <!-- NOTES PAGE -->
           <section id="notes" class="page">
             <div class="backRow"><button class="backBtn" onclick="openPage('hub')">← Back</button></div>
             <div class="noteInputRow">
@@ -361,7 +780,6 @@
             <div class="notesBoard" id="notesBoard"></div>
           </section>
 
-          <!-- SONGS PAGE -->
           <section id="songs" class="page">
             <div class="backRow"><button class="backBtn" onclick="openPage('hub')">← Back</button></div>
             <div class="songsGrid" id="songsGrid"></div>
@@ -383,7 +801,6 @@
             <audio id="player" style="display:none"></audio>
           </section>
 
-          <!-- PHOTOS PAGE -->
           <section id="photos" class="page">
             <div class="backRow"><button class="backBtn" onclick="openPage('hub')">← Back</button></div>
             <div class="photoCats" id="photoCats">
@@ -397,17 +814,17 @@
               </div>
             </div>
             <div class="photosWall" id="photosWall" style="display:none">
-              <div style="text-align:center;margin-bottom:10px"><button class="backBtn" onclick="closePhotoCat()">← Back to photo categories</button></div>
+              <div style="text-align:center;margin-bottom:10px">
+                <button class="backBtn" onclick="closePhotoCat()">← Back to photo categories</button>
+              </div>
               <div class="polaroidGrid" id="polaroidGrid"></div>
             </div>
           </section>
         </main>`;
 
-      // Show hub + footer
       openPage('hub');
       cuteFooter.style.display = 'flex';
 
-      // ===== NOTES logic =====
       const notesBoard = document.getElementById('notesBoard');
       const addBtn = document.getElementById('addNoteBtn');
       const input  = document.getElementById('noteContent');
@@ -439,7 +856,6 @@
         }
       });
 
-      // ===== SONGS behavior =====
       const songs = [
         { file: 'songs/K.mp3',                cover:'songs/covers/K..jpg',            title:'K.',                 artist:'Cigarettes After Sex' },
         { file: 'songs/RightOne.mp3',         cover:'songs/covers/rightone.jpg',      title:'The Right One',      artist:'Sports' },
@@ -492,14 +908,9 @@
       ap.bar.addEventListener('click', (e)=>{ const r = ap.bar.getBoundingClientRect(); const ratio = (e.clientX - r.left) / r.width; ap.audio.currentTime = ratio * (ap.audio.duration||0); });
       ap.audio.addEventListener('ended', ()=> ap.next.click());
 
-      // ===== PHOTOS behavior =====
       const photoSets = {
-      calls: ['photos/calls/IMG1.jpg','photos/calls/IMG2.jpg','photos/calls/IMG3.jpg','photos/calls/IMG4.jpg','photos/calls/IMG5.jpg','photos/calls/IMG6.jpg','photos/calls/IMG7.jpg','photos/calls/IMG8.jpg','photos/calls/IMG9.JPG','photos/calls/IMG10.JPG','photos/calls/IMG11.JPG','photos/calls/IMG12.JPG','photos/calls/IMG13.JPG','photos/calls/IMG14.JPG','photos/calls/IMG15.JPG','photos/calls/IMG16.JPG','photos/calls/IMG17.JPG','photos/calls/IMG18.jpeg','photos/calls/IMG19.jpeg','photos/calls/IMG20.jpeg','photos/calls/IMG21.jpeg','photos/calls/IMG22.jpeg','photos/calls/IMG23.jpeg','photos/calls/IMG24.jpeg','photos/calls/IMG25.jpeg','photos/calls/IMG26.jpeg','photos/calls/VID1.mp4', 'photos/calls/IMG27.jpeg','photos/calls/IMG28.jpeg','photos/calls/IMG29.jpeg','photos/calls/IMG30.jpeg','photos/calls/IMG31.jpeg','photos/calls/IMG32.jpeg','photos/calls/IMG33.jpeg','photos/calls/VID2.mp4'
-],
-
-
-
-      irl:   ['photos/realLife/IMG1.jpg','photos/realLife/IMG2.jpg','photos/realLife/IMG3.jpg','photos/realLife/IMG4.jpg','photos/realLife/IMG5.jpg','photos/realLife/IMG6.jpg','photos/realLife/VID1.mp4']
+        calls: ['photos/calls/IMG1.jpg','photos/calls/IMG2.jpg','photos/calls/IMG3.jpg','photos/calls/IMG4.jpg','photos/calls/IMG5.jpg','photos/calls/IMG6.jpg','photos/calls/IMG7.jpg','photos/calls/IMG8.jpg','photos/calls/IMG9.JPG','photos/calls/IMG10.JPG','photos/calls/IMG11.JPG','photos/calls/IMG12.JPG','photos/calls/IMG13.JPG','photos/calls/IMG14.JPG','photos/calls/IMG15.JPG','photos/calls/IMG16.JPG','photos/calls/IMG17.JPG','photos/calls/IMG18.jpeg','photos/calls/IMG19.jpeg','photos/calls/IMG20.jpeg','photos/calls/IMG21.jpeg','photos/calls/IMG22.jpeg','photos/calls/IMG23.jpeg','photos/calls/IMG24.jpeg','photos/calls/IMG25.jpeg','photos/calls/IMG26.jpeg','photos/calls/VID1.mp4','photos/calls/IMG27.jpeg','photos/calls/IMG28.jpeg','photos/calls/IMG29.jpeg','photos/calls/IMG30.jpeg','photos/calls/IMG31.jpeg','photos/calls/IMG32.jpeg','photos/calls/IMG33.jpeg','photos/calls/VID2.mp4'],
+        irl:   ['photos/realLife/IMG1.jpg','photos/realLife/IMG2.jpg','photos/realLife/IMG3.jpg','photos/realLife/IMG4.jpg','photos/realLife/IMG5.jpg','photos/realLife/IMG6.jpg','photos/realLife/VID1.mp4']
       };
       window.openPhotoCat = function(cat){
         document.getElementById('photoCats').style.display='none';
@@ -513,7 +924,6 @@
           p.innerHTML = isVideo
             ? `<span class="pin" aria-hidden="true"></span><video src="${src}" playsinline muted></video>`
             : `<span class="pin" aria-hidden="true"></span><img src="${src}" alt="memory ${idx+1}">`;
-          // Click the whole card
           p.addEventListener('click', ()=> openLightbox(src, isVideo));
           grid.appendChild(p);
         });
@@ -531,13 +941,26 @@
       else { document.getElementById(p).style.display='block'; cuteFooter.style.display='none'; }
     }
 
-    // Lightbox
     function openLightbox(src, isVideo){
       const lb = document.getElementById('lightbox');
       const box = document.getElementById('lbContent');
       box.innerHTML = '';
-      if(isVideo){ const v = document.createElement('video'); v.src = src; v.controls = true; v.playsInline = true; v.style.maxWidth = '100%'; v.style.maxHeight = '70vh'; box.appendChild(v); }
-      else{ const img = new Image(); img.src = src; img.alt = 'memory'; img.style.maxWidth = '100%'; img.style.maxHeight = '70vh'; box.appendChild(img); }
+      if(isVideo){
+        const v = document.createElement('video');
+        v.src = src;
+        v.controls = true;
+        v.playsInline = true;
+        v.style.maxWidth = '100%';
+        v.style.maxHeight = '70vh';
+        box.appendChild(v);
+      } else {
+        const img = new Image();
+        img.src = src;
+        img.alt = 'memory';
+        img.style.maxWidth = '100%';
+        img.style.maxHeight = '70vh';
+        box.appendChild(img);
+      }
       lb.style.display = 'flex';
     }
     (function(){
@@ -548,13 +971,11 @@
       document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') lb.style.display='none'; });
     })();
 
-    // ===== Calendar (only built after unlock) =====
     function initLoveCalendar(){
       const btn = document.getElementById('calendarBtn');
       const cal = document.getElementById('calShell');
       const titleEl = document.getElementById('calTitle');
 
-      // toggle open/close (never blocks when closed)
       btn.onclick = (e) => {
         e.stopPropagation();
         cal.classList.toggle('show');
@@ -569,7 +990,6 @@
       });
       document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') { cal.classList.remove('show'); cal.setAttribute('aria-hidden','true'); } });
 
-      // builders
       function daysInMonth(y,m){return new Date(y,m+1,0).getDate();}
       function buildMonth(y,m){
         const wrap=document.createElement('div');wrap.className='month';
@@ -596,14 +1016,12 @@
       }
       function buildYear(y){const grid=document.createElement('div');grid.className='month-wrap';for(let m=0;m<12;m++)grid.appendChild(buildMonth(y,m));return grid;}
 
-      // render pages
       const y2025 = document.getElementById('year2025');
       const y2026 = document.getElementById('year2026');
       y2025.innerHTML=''; y2026.innerHTML='';
       y2025.appendChild(buildYear(2025));
       y2026.appendChild(buildYear(2026));
 
-      // nav
       let currentYear = 2025;
       function switchYear(delta){
         const next = currentYear + delta;
@@ -617,19 +1035,17 @@
         show.classList.add('visible');
         currentYear = next;
         titleEl.textContent = `Our Little Calendar — ${currentYear}`;
-        renderMarks(); // refresh tags when changing year
+        renderMarks();
       }
 
       document.getElementById('prevBtn').addEventListener('click', ()=>switchYear(-1));
       document.getElementById('nextBtn').addEventListener('click', ()=>switchYear(1));
 
-      // helpers
       function qDay(y,m1,d){
         const page=document.getElementById('year'+y);
         return [...page.querySelectorAll('.day')].find(el=>+el.dataset.y===y && +el.dataset.m===m1 && +el.dataset.d===d);
       }
 
-      // marks 2025 (static decorations)
       (function mark2025(){
         const c1=qDay(2025,7,15); if(c1) c1.classList.add('pen-circle');
         const c2=qDay(2025,7,20); if(c2) c2.classList.add('pen-circle');
@@ -644,7 +1060,6 @@
         }
       })();
 
-      // birthday 12/12 for 2025 & 2026
       function markBirthday(y){
         const b = qDay(y,12,12);
         if (b) { b.classList.add('pen-circle'); b.title = "My Wife’s birthdayyyy 🎂"; }
@@ -652,7 +1067,6 @@
       markBirthday(2025);
       markBirthday(2026);
 
-      // counters
       function inclusiveDaysFrom(startY,startM1,startD){
         const today=new Date();
         const A=Date.UTC(startY,startM1-1,startD);
@@ -671,11 +1085,9 @@
       updateSince(); updateCountdown();
       setInterval(()=>{updateSince();updateCountdown();},1000);
 
-      // ==== Shared calendar tags (no author field) ====
       let latestTags = {};
 
       function renderMarks() {
-        // clear old marks
         document.querySelectorAll('.day.tagged').forEach(el => {
           el.classList.remove('tagged');
           el.removeAttribute('data-label');
@@ -685,7 +1097,6 @@
         const chips = document.getElementById('calChips');
         chips.innerHTML = '';
 
-        // draw marks + tooltip
         Object.entries(latestTags).forEach(([k,obj])=>{
           if(!obj || !k.startsWith(yearShown)) return;
           const [yy,mm,dd] = k.split('-').map(Number);
@@ -698,7 +1109,6 @@
           }
         });
 
-        // chips list
         const entries = Object.entries(latestTags)
           .filter(([k])=>k.startsWith(yearShown))
           .sort((a,b)=>a[0].localeCompare(b[0]));
@@ -717,7 +1127,6 @@
         }
       }
 
-      // Add via inputs
       const tagDate = document.getElementById('tagDate');
       const tagLabel = document.getElementById('tagLabel');
       const addTagBtn = document.getElementById('addTagBtn');
@@ -730,9 +1139,8 @@
         tagLabel.value = '';
       });
 
-      // clicking a day (guarded when hidden)
       function onDayClick(y, m1, d) {
-        if (!cal.classList.contains('show')) return; // ignore if calendar is closed
+        if (!cal.classList.contains('show')) return;
         const k = `${y}-${String(m1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
         const current = latestTags[k]?.label || '';
         const txt = prompt(current ? 'Edit tag for this day:' : 'Add a tag for this day:', current);
@@ -741,26 +1149,126 @@
         if (!label) return TAGS_REF.child(k).remove();
         TAGS_REF.child(k).set({ label, ts: Date.now() });
       }
-      // expose to the buildMonth closure
       window.onDayClick = onDayClick;
 
-      // live updates
       TAGS_REF.on('value', snap => {
         latestTags = snap.val() || {};
         renderMarks();
       });
     }
 
-    // ===== Unlock =====
+    function createConfetti(){
+      const layer = document.getElementById('confettiLayer');
+      if (!layer || layer.children.length) return;
+      const colors = ['#ff6fa6','#ffd447','#7ee5ff','#c792ff','#7cff92'];
+      const pieces = 140;
+      for(let i=0;i<pieces;i++){
+        const el = document.createElement('div');
+        el.className = 'confettiPiece';
+        el.style.left = Math.random()*100 + '%';
+        el.style.setProperty('--t', (3 + Math.random()*3) + 's');
+        el.style.setProperty('--c', colors[Math.floor(Math.random()*colors.length)]);
+        el.style.animationDelay = (-Math.random()*4) + 's';
+        layer.appendChild(el);
+      }
+    }
+
+    function setupBlowButton(){
+      if (cakeInitDone) return;
+      cakeInitDone = true;
+
+      const btn      = document.getElementById('blowBtn');
+      const hint     = document.getElementById('blowHint');
+      const overlay  = document.getElementById('cakeOverlay');
+
+      if (!btn || !hint || !overlay) return;
+
+      let timer = null;
+      const holdTime = 1000;
+
+      const startHold = (ev)=>{
+        ev.preventDefault();
+        if (timer) return;
+        hint.textContent = 'Keep holding… almost there 🥹';
+        overlay.classList.add('blowing');
+        timer = setTimeout(()=>{
+          timer = null;
+          blowCandle();
+        }, holdTime);
+      };
+
+      const cancelHold = ()=>{
+        if (!timer) return;
+        clearTimeout(timer);
+        timer = null;
+        overlay.classList.remove('blowing');
+        hint.textContent = 'Hold the button to blow out the candle.';
+      };
+
+      ['mousedown','touchstart'].forEach(ev => btn.addEventListener(ev, startHold));
+      ['mouseup','mouseleave','touchend','touchcancel'].forEach(ev => btn.addEventListener(ev, cancelHold));
+    }
+
+    function blowCandle(){
+      const overlay   = document.getElementById('cakeOverlay');
+      const hint      = document.getElementById('blowHint');
+      const cakeStage = document.getElementById('cakeStage');
+      const cardStage = document.getElementById('cardStage');
+      const cardDone  = document.getElementById('cardDoneBtn');
+
+      if (!overlay || !hint || !cakeStage || !cardStage || !cardDone) return;
+
+      overlay.classList.remove('blowing');
+      overlay.classList.add('blowed');
+      hint.textContent = 'Make a wish… 🥹🎂';
+
+      setTimeout(()=>{
+        cakeStage.classList.add('hidden');
+        cardStage.classList.add('show');
+      }, 900);
+
+      cardDone.onclick = ()=>{
+        overlay.classList.add('fadeOut');
+        setTimeout(()=>{
+          overlay.classList.remove('show','fadeOut','blowed','blowing');
+        }, 800);
+      };
+    }
+
+function showBirthdayCakeIfNeeded(){
+  const overlay = document.getElementById('cakeOverlay');
+  if (!overlay) return;
+
+  const today = todayISO();
+  let shouldShow = false;
+
+  // For testing: always show if FORCE_CAKE_PREVIEW is true
+  if (FORCE_CAKE_PREVIEW) {
+    shouldShow = true;
+  }
+  // Real birthday behavior:
+  // On 2025-12-12, ALWAYS show (no localStorage check)
+  else if (today === BDAY_DATE) {
+    shouldShow = true;
+  }
+
+  if (!shouldShow) return;
+
+  overlay.classList.add('show');
+  createConfetti();
+  setupBlowButton();
+}
+
+
     function unlock(){
       const val = document.getElementById('codeField').value.trim();
       if(val === SECRET){
         showApp();
         initHub();
-        // reveal + build calendar AFTER unlocking
         document.getElementById('calendarBtn').classList.remove('hiddenBeforeUnlock');
         document.getElementById('calShell').classList.remove('hiddenBeforeUnlock');
         initLoveCalendar();
+        showBirthdayCakeIfNeeded();
       } else {
         document.getElementById('gateMsg').textContent = 'Wrong code — try again.';
       }
@@ -770,7 +1278,6 @@
     document.getElementById('submitCode').addEventListener('click', unlock);
     document.getElementById('codeField').addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); unlock(); } });
 
-    // ===== Minimal self-tests =====
     (function(){
       try{
         console.assert(escapeHtml('a&b')==='a&amp;b','& escaping failed');
