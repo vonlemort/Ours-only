@@ -17,6 +17,28 @@
       overflow-x:hidden;
     }
 
+    .loveJarToast {
+      position:fixed;
+      left:50%;
+      bottom:18px;
+      transform:translateX(-50%) translateY(24px);
+      background:#fffdf8;
+      border-radius:999px;
+      padding:8px 18px;
+      border:1px solid #f2c8d8;
+      box-shadow:0 10px 24px rgba(0,0,0,0.18);
+      font-size:13px;
+      color:var(--muted);
+      opacity:0;
+      pointer-events:none;
+      transition:opacity .3s ease, transform .3s ease;
+      z-index:170;
+    }
+    .loveJarToast.show {
+      opacity:1;
+      transform:translateX(-50%) translateY(0);
+    }
+
     /* ---- Gate ---- */
     .gateWrap{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,#fff0fb,#fff);z-index:80}
     .gateCard{width:100%;max-width:520px;padding:32px;border-radius:18px;background:linear-gradient(180deg,#fff,#fff8fb);box-shadow:0 20px 50px rgba(255,111,160,0.15);text-align:center;animation:pop .6s ease}
@@ -125,6 +147,14 @@
     #calendarBtn.hiddenBeforeUnlock,
     #calShell.hiddenBeforeUnlock { display:none !important; }
 
+    #calendarBtn {
+      position: fixed; top: 18px; right: 18px;
+      background: #fff; color: #ff6fa6; border: 2px solid rgba(255,111,166,0.4);
+      font-weight: 800; border-radius: 50px; padding: 10px 18px;
+      box-shadow: 0 6px 16px rgba(255,111,166,.25); cursor: pointer; z-index: 100; transition: all 0.25s ease;
+    }
+    #calendarBtn:hover { background: #ff6fa6; color: #fff; transform: scale(1.05); }
+
     .cal-shell{
       --pink:#ff6fa6; --ink:#b03050; --paper:#fff9fc; --pen:#e83434;
       position:fixed;top:70px;right:20px;width:640px;max-height:85vh;background:var(--paper);
@@ -135,13 +165,6 @@
     .cal-shell.show{opacity:1;pointer-events:auto;transform:translateY(0) scale(1)}
 
     #calShell:not(.show){display:none !important;pointer-events:none !important;}
-    #calendarBtn {
-      position: fixed; top: 18px; right: 18px;
-      background: #fff; color: #ff6fa6; border: 2px solid rgba(255,111,166,0.4);
-      font-weight: 800; border-radius: 50px; padding: 10px 18px;
-      box-shadow: 0 6px 16px rgba(255,111,166,.25); cursor: pointer; z-index: 100; transition: all 0.25s ease;
-    }
-    #calendarBtn:hover { background: #ff6fa6; color: #fff; transform: scale(1.05); }
 
     .cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
     .cal-title{font-weight:800;color:var(--pink);font-size:16px}
@@ -179,7 +202,16 @@
     .day.other{opacity:.35;cursor:default}
     .pen-circle::after{content:"";position:absolute;inset:3px;border-radius:10px;border:1.6px solid #e83434;transform:rotate(-2deg)}
     .pen-underline::after{content:"";position:absolute;left:6px;right:6px;bottom:4px;height:1.6px;background:#e83434;transform:rotate(-2deg)}
-    .pen-x::after{content:"✗";position:absolute;color:#e83434;font-size:10px;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-8deg)}
+    .pen-x::after{
+      content:"✓";
+      position:absolute;
+      color:#e83434;
+      font-size:11px;
+      top:50%;
+      left:50%;
+      transform:translate(-50%,-50%) rotate(-8deg);
+    }
+
     .info{margin-top:12px;padding:10px;background:#fff;border:1px dashed rgba(255,111,166,.35);border-radius:12px;text-align:center;color:#7a3a4f}
     .big{font-weight:800;color:#ff6fa6}
     .tiny{font-size:12px;opacity:.9}
@@ -218,7 +250,6 @@
       opacity:0;
     }
 
-    /* THIS centers either cakeStage or cardStage in the middle */
     .cakeOverlayInner{
       position:relative;
       width:100%;
@@ -229,6 +260,25 @@
       align-items:center;
       justify-content:center;
       flex-direction:column;
+    }
+
+    /* transition overlay between cake & card */
+    .cakeTransition{
+      position:fixed;
+      inset:0;
+      background:radial-gradient(circle at center, rgba(255,255,255,0.08), rgba(0,0,0,0.9));
+      pointer-events:none;
+      opacity:0;
+      transition:opacity .6s ease;
+      z-index:205;
+      display:none;
+    }
+    .cakeTransition.show{
+      display:block;
+      opacity:1;
+    }
+    .cakeTransition.fadeOut{
+      opacity:0;
     }
 
     @keyframes cakeFloat{
@@ -250,26 +300,43 @@
       pointer-events:none;
     }
 
-    /* CARD STAGE – centered same way as cake */
+    #blowBtn {
+      position: relative;
+      overflow: hidden;
+    }
+    .blowProgressTrack {
+      position: absolute;
+      inset: 0;
+      background: rgba(255,255,255,0.10);
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity .15s ease;
+    }
+    .blowProgressFill {
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 0%;
+      background: rgba(255,255,255,0.45);
+      mix-blend-mode: screen;
+      transition: width .05s linear;
+    }
 
     .cardStage{
-  display:none;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  gap:18px;
-  opacity:0;
-  transform:translateY(-240px);   /* <-- LIFT CARD UP */
-  transition:opacity .6s ease, transform .6s ease;
-}
-  
-
-
-  
-.cardStage.show{
-  display:flex;
-  opacity:1;
-}
+      display:none;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:18px;
+      opacity:0;
+      transform:translateY(-240px);
+      transition:opacity .6s ease, transform .6s ease;
+    }
+    .cardStage.show{
+      display:flex;
+      opacity:1;
+    }
 
     .ecard{
       display:flex;
@@ -337,6 +404,16 @@
         3px 3px 0 #1d6aa1,
         6px 6px 0 #000;
       text-shadow:1px 1px 0 #000,2px 2px 0 #000;
+    }
+
+    .cakeOverlay.candlesOff .digit {
+      background:#444a55;
+      color:#d5d5d5;
+      box-shadow:
+        0 0 0 3px #000,
+        1px 1px 0 #222,
+        3px 3px 0 #111;
+      filter: grayscale(0.3) brightness(0.9);
     }
 
     .digit::after{
@@ -427,6 +504,23 @@
       pointer-events:none;
     }
 
+    .cakeSmokePuff {
+      position:absolute;
+      left:50%;
+      top:15%;
+      width:56px;
+      height:56px;
+      border-radius:50%;
+      background:radial-gradient(circle,
+        rgba(255,255,255,.95) 0,
+        rgba(210,210,210,.7) 35%,
+        rgba(160,160,160,0) 80%);
+      opacity:0;
+      pointer-events:none;
+      animation:smokeRise 1.8s ease-out forwards;
+      filter:blur(0.5px);
+    }
+
     .cakeOverlay.blowed .cakeImgWrap::after{
       opacity:1;
       animation:smokeRise 1.4s ease-out forwards;
@@ -438,7 +532,6 @@
       color:#ffeaf3;
     }
 
-    /* E-card halves */
     .ecard-half{
       flex:1 1 260px;
       min-height:260px;
@@ -557,6 +650,331 @@
         transform:translate3d(0,110vh,0) rotate(360deg);
       }
     }
+
+    /* === LOVE JAR (visual) === */
+    .loveJarSection {
+      margin: 10px auto 0;
+      max-width: 420px;
+      text-align: center;
+      position: relative;
+      z-index: 2;
+    }
+    .loveJarTitle {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--accent);
+      margin-bottom: 10px;
+    }
+    .loveJarCenter {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 12px 0 40px;
+    }
+    .loveJarBtn {
+      position: relative;
+      width: 210px;
+      height: 270px;
+      border: none;
+      background: transparent;
+      padding: 0;
+      cursor: pointer;
+      outline: none;
+      transform-origin: center bottom;
+      transition: transform 0.2s ease, filter 0.2s ease;
+    }
+    .loveJarBtn:hover {
+      transform: translateY(-4px) scale(1.02);
+      filter: drop-shadow(0 10px 20px rgba(0,0,0,0.18));
+    }
+    .loveJarBtn.loveJarShake {
+      animation: loveJarShake 0.45s ease-in-out;
+    }
+    .loveJarPapers.loveJarPapersShake {
+      animation: loveJarShake 0.45s ease-in-out;
+    }
+    @keyframes loveJarShake {
+      0%   { transform: translateX(0)      rotate(0deg); }
+      20%  { transform: translateX(-3px)   rotate(-2deg); }
+      40%  { transform: translateX(3px)    rotate(1.5deg); }
+      60%  { transform: translateX(-2px)   rotate(-1deg); }
+      80%  { transform: translateX(2px)    rotate(1deg); }
+      100% { transform: translateX(0)      rotate(0deg); }
+    }
+
+    .loveJarBody {
+      position: absolute;
+      left: 50%;
+      bottom: 0;
+      transform: translateX(-50%);
+      width: 165px;
+      height: 215px;
+      border-radius: 46px 46px 32px 32px;
+      border: 3px solid rgba(255,111,166,0.9);
+      background:
+        radial-gradient(circle at 20% 10%, rgba(255,255,255,0.85), transparent 55%),
+        linear-gradient(180deg, rgba(255,182,214,0.45), rgba(255,182,214,0.12)),
+        rgba(255,255,255,0.45);
+      backdrop-filter: blur(4px);
+      box-shadow:
+        0 16px 30px rgba(255,111,166,0.35),
+        inset 0 0 16px rgba(255,255,255,0.4);
+      overflow: hidden;
+      z-index: 1;
+    }
+
+    .loveJarLid {
+      position: absolute;
+      left: 50%;
+      bottom: 205px;
+      transform: translateX(-50%);
+      width: 130px;
+      height: 26px;
+      z-index: 3;
+    }
+    .loveJarLid::before{
+      content:"";
+      position:absolute;
+      left:50%;
+      top:-6px;
+      transform:translateX(-50%);
+      width:130px;
+      height:16px;
+      border-radius:999px;
+      background:linear-gradient(90deg,#fdd2df,#f9a7c1);
+      box-shadow:0 4px 6px rgba(0,0,0,0.35);
+    }
+    .loveJarLid::after{
+      content:"";
+      position:absolute;
+      left:50%;
+      top:4px;
+      transform:translateX(-50%);
+      width:126px;
+      height:18px;
+      border-radius:0 0 10px 10px;
+      background:repeating-linear-gradient(
+        90deg,
+        #f9b4cf 0, #f9b4cf 10px,
+        #f58ba9 10px, #f58ba9 20px
+      );
+      border:2px solid rgba(160,60,96,0.85);
+      box-shadow:0 5px 10px rgba(0,0,0,0.35);
+    }
+
+    .loveJarNeck {
+      position: absolute;
+      left: 50%;
+      bottom: 188px;
+      transform: translateX(-50%);
+      width: 110px;
+      height: 16px;
+      background: linear-gradient(180deg,#ffe5f2,#f2aacb);
+      border-radius: 9px;
+      border: 2px solid rgba(255,111,166,0.9);
+      box-shadow:0 4px 8px rgba(0,0,0,0.25);
+      z-index: 2;
+    }
+
+    .loveJarPapers {
+      position: absolute;
+      inset: 18px 8px 18px;
+      pointer-events: none;
+    }
+    .loveJarStrip {
+      position: absolute;
+      width: 64px;
+      height: 20px;
+      border-radius: 6px;
+      background: linear-gradient(180deg,#fffdf4,#f7ecd0);
+      border: 1px solid #e6d7b9;
+      box-shadow: 0 2px 0 rgba(0,0,0,0.08);
+      transform: rotate(var(--r, -3deg));
+      overflow:hidden;
+      transition: left 0.25s ease, top 0.25s ease, transform 0.25s ease;
+    }
+    .loveJarStrip::before {
+      content: "";
+      position: absolute;
+      left: 12%;
+      right: 12%;
+      top: 50%;
+      transform: translateY(-50%);
+      border-top: 1px dashed rgba(210,180,120,0.8);
+      opacity: 0.75;
+    }
+    .loveJarStrip::after{
+      content:"";
+      position:absolute;
+      left: 4px;
+      right: 4px;
+      top: 4px;
+      bottom: 4px;
+      background:
+        repeating-linear-gradient(
+          180deg,
+          rgba(150,100,120,0.35) 0,
+          rgba(150,100,120,0.35) 1px,
+          transparent 1px,
+          transparent 3px
+        );
+      opacity:0.45;
+      mix-blend-mode:multiply;
+    }
+
+    .loveJarHighlight {
+      position: absolute;
+      right: 18px;
+      top: 26px;
+      width: 24px;
+      height: 130px;
+      border-radius: 999px;
+      background: linear-gradient(180deg,rgba(255,255,255,0.9),rgba(255,255,255,0.1));
+      opacity: 0.8;
+      mix-blend-mode: screen;
+    }
+
+    .loveJarLabel {
+      position: absolute;
+      left: 50%;
+      bottom: 82px;
+      transform: translateX(-50%) rotate(-4deg);
+      padding: 6px 18px;
+      border-radius: 20px;
+      background: #fffdf3;
+      border: 1px solid #e4cfa3;
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--muted);
+      box-shadow:
+        0 3px 0 rgba(208,173,115,0.7),
+        0 0 12px rgba(255,255,255,0.9);
+      z-index: 4;
+    }
+
+    .loveJarTag {
+      position: absolute;
+      right: 30px;
+      bottom: 150px;
+      width: 22px;
+      height: 22px;
+      background: #ff6fa6;
+      border-radius: 50%;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      color: #fff;
+      transform: rotate(-18deg);
+    }
+
+    .loveJarBtn:active {
+      transform: translateY(1px) scale(0.98);
+    }
+
+    .loveJarOverlay {
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle at top, rgba(0,0,0,0.68), rgba(0,0,0,0.88));
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 160;
+      padding: 18px;
+    }
+    .loveJarOverlay.show {
+      display: flex;
+      animation: loveOverlayFade 0.28s ease-out forwards;
+    }
+    @keyframes loveOverlayFade {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+    .loveJarPaper {
+      position: relative;
+      background: #fffdf6;
+      border-radius: 18px;
+      padding: 16px 18px 14px;
+      max-width: 360px;
+      width: min(90vw, 360px);
+      box-shadow:
+        0 20px 40px rgba(0,0,0,0.45),
+        0 0 0 2px rgba(230,210,165,0.85);
+      transform-origin: center center;
+      overflow: hidden;
+    }
+    .loveJarPaper.is-folded {
+      transform: scaleY(0.15) scaleX(0.7);
+      border-radius: 8px;
+    }
+    .loveJarPaper.is-open {
+      animation: lovePaperUnroll 0.42s cubic-bezier(.19,1,.22,1) forwards;
+    }
+    @keyframes lovePaperUnroll {
+      0% {
+        transform: scaleY(0.15) scaleX(0.7) translateY(20px);
+        border-radius: 8px;
+      }
+      60% {
+        transform: scaleY(1.05) scaleX(1.02) translateY(0);
+        border-radius: 18px;
+      }
+      100% {
+        transform: scaleY(1) scaleX(1) translateY(0);
+        border-radius: 18px;
+      }
+    }
+
+    .loveJarPaperTop {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+    .loveJarPaperTitle {
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--muted);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .loveJarCloseBtn {
+      border: none;
+      background: var(--accent);
+      color: #fff;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 10px;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(255,111,166,0.6);
+    }
+    .loveJarCloseBtn:active {
+      transform: translateY(1px);
+    }
+    .loveJarText {
+      font-size: 15px;
+      color: #5f3b43;
+      line-height: 1.5;
+      text-align: left;
+      white-space: pre-wrap;
+      text-shadow: 0 0 10px rgba(154,120,255,0.45);
+    }
+    .loveJarPaper::before,
+    .loveJarPaper::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 6px;
+      background-image: radial-gradient(circle at 6px -3px, #f0dec1 6px, transparent 7px);
+      background-size: 12px 8px;
+      opacity: 0.5;
+    }
+    .loveJarPaper::before { top: 0; transform: translateY(-2px) rotate(180deg); }
+    .loveJarPaper::after  { bottom: 0; transform: translateY(2px); }
   </style>
 
   <!-- Firebase SDKs -->
@@ -592,9 +1010,9 @@
       <div class="sticky">Dec 12 — My Wife’s birthdayyy</div>
     </div>
 
+    <!-- CHANGED: only one year grid now -->
     <div class="year-container" id="yearContainer">
-      <div class="year-page visible" id="year2025"></div>
-      <div class="year-page hidden"  id="year2026"></div>
+      <div id="yearGrid" class="year-page visible"></div>
     </div>
 
     <div class="info">
@@ -608,6 +1026,9 @@
   <!-- Birthday cake overlay -->
   <div id="cakeOverlay" class="cakeOverlay">
     <div id="confettiLayer"></div>
+    <!-- fade overlay for transition between cake & card -->
+    <div id="cakeTransition" class="cakeTransition"></div>
+
     <div class="cakeOverlayInner">
 
       <!-- STAGE 1: Cake -->
@@ -622,7 +1043,12 @@
 
         <h2 style="margin-top:22px;margin-bottom:6px;">Happy 17th Birthday my gorgeous beautiful beautiful wife</h2>
         <p id="blowHint" class="cakeText">Hold the button to blow out the candle</p>
-        <button id="blowBtn" class="btn">Hold to blow the candle</button>
+        <button id="blowBtn" class="btn">
+          <span id="blowLabel">Hold to blow the candle</span>
+          <span class="blowProgressTrack">
+            <span class="blowProgressFill"></span>
+          </span>
+        </button>
       </div>
 
       <!-- STAGE 2: Birthday card -->
@@ -689,6 +1115,19 @@ Happy birthday, my love. I’m grateful for you more than these words can ever s
     </div>
   </div>
 
+  <!-- LOVE JAR OVERLAY -->
+  <div class="loveJarOverlay" id="loveJarOverlay">
+    <div class="loveJarPaper is-folded" id="loveJarPaper">
+      <div class="loveJarPaperTop">
+        <div class="loveJarPaperTitle">
+          <span id="loveJarCountLabel">Reason 1 of 100</span>
+        </div>
+        <button class="loveJarCloseBtn" id="loveJarCloseBtn">Close</button>
+      </div>
+      <div class="loveJarText" id="loveJarText"></div>
+    </div>
+  </div>
+
   <script>
     function escapeHtml(s){
       return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
@@ -707,7 +1146,11 @@ Happy birthday, my love. I’m grateful for you more than these words can ever s
     const CAKE_STORAGE_KEY = 'khadeja_cake_2025_seen';
     const BDAY_DATE = '2025-12-12';
     let FORCE_CAKE_PREVIEW = false;
-    let cakeInitDone = false;
+    const JAR_PROGRESS_KEY = 'loveJarProgress_v1';
+    const JAR_COMPLETE_KEY = 'loveJarCompleted_v1';
+
+    /* JAR PREVIEW SWITCH – set to false when you no longer want early preview */
+    const JAR_PREVIEW = false;
 
     const SECRET = 'saleh';
     const gateWrap = document.getElementById('gateWrap');
@@ -764,6 +1207,10 @@ Happy birthday, my love. I’m grateful for you more than these words can ever s
               <div class="label">Songs</div>
               <div class="desc">Songs that remind me of usss</div>
             </div>
+            <div class="bigBtn" id="jarTile" onclick="openPage('jar')">🫙
+              <div class="label">Jar of Love</div>
+              <div class="desc">100 little reasons I love you, and things I like about our relationship. one paper at a time</div>
+            </div>
             <div class="bigBtn" onclick="openPage('photos')">📸
               <div class="label">Photos</div>
               <div class="desc">Our memories togetherr</div>
@@ -799,6 +1246,25 @@ Happy birthday, my love. I’m grateful for you more than these words can ever s
               </div>
             </div>
             <audio id="player" style="display:none"></audio>
+          </section>
+
+          <section id="jar" class="page">
+            <div class="backRow"><button class="backBtn" onclick="openPage('hub')">← Back</button></div>
+            <div class="loveJarSection">
+              <div class="loveJarTitle">Jar of Love</div>
+              <div class="loveJarCenter">
+                <button class="loveJarBtn" id="loveJarBtn" type="button" aria-label="Open love jar">
+                  <div class="loveJarLid"></div>
+                  <div class="loveJarNeck"></div>
+                  <div class="loveJarBody">
+                    <div class="loveJarPapers" id="loveJarPapers"></div>
+                    <div class="loveJarHighlight"></div>
+                  </div>
+                  <div class="loveJarLabel">100 little reasons</div>
+                  <div class="loveJarTag">💖</div>
+                </button>
+              </div>
+            </div>
           </section>
 
           <section id="photos" class="page">
@@ -861,7 +1327,8 @@ Happy birthday, my love. I’m grateful for you more than these words can ever s
         { file: 'songs/RightOne.mp3',         cover:'songs/covers/rightone.jpg',      title:'The Right One',      artist:'Sports' },
         { file: 'songs/3005.mp3',             cover:'songs/covers/3005.jpg',          title:'3005',               artist:'Childish Gambino' },
         { file: 'songs/KISS.mp3',             cover:'songs/covers/KISS.JPG',          title:'Kiss Of Life',       artist:'Sade' },
-        { file: 'songs/For the First Time.mp3', cover:'songs/covers/ForTheFirstTime.jpg', title:'For The First Time', artist:'Mac DeMarco' }
+        { file: 'songs/For the First Time.mp3', cover:'songs/covers/ForTheFirstTime.jpg', title:'For The First Time', artist:'Mac DeMarco' },
+        { file: 'songs/Superpowers.mp3',        cover:'songs/covers/super.png',       title:'Superpowers',        artist:'Daniel Caesar' }
       ];
       const songsGrid = document.getElementById('songsGrid');
       const player    = document.getElementById('player');
@@ -933,6 +1400,17 @@ Happy birthday, my love. I’m grateful for you more than these words can ever s
         document.getElementById('photoCats').style.display='flex';
         document.getElementById('polaroidGrid').innerHTML='';
       }
+
+      /* JAR VISIBILITY + INIT */
+      const jarEnabled = isJarEnabled();
+      const jarTile = document.getElementById('jarTile');
+      const jarSection = document.getElementById('jar');
+      if (!jarEnabled) {
+        if (jarTile) jarTile.style.display = 'none';
+        if (jarSection) jarSection.style.display = 'none';
+      } else {
+        initLoveJar();
+      }
     }
 
     function openPage(p){
@@ -971,10 +1449,12 @@ Happy birthday, my love. I’m grateful for you more than these words can ever s
       document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') lb.style.display='none'; });
     })();
 
+    /* ======== CALENDAR FIXED VERSION (streak kept, no double grid) ======== */
     function initLoveCalendar(){
       const btn = document.getElementById('calendarBtn');
       const cal = document.getElementById('calShell');
       const titleEl = document.getElementById('calTitle');
+      const yearGrid = document.getElementById('yearGrid');
 
       btn.onclick = (e) => {
         e.stopPropagation();
@@ -991,6 +1471,7 @@ Happy birthday, my love. I’m grateful for you more than these words can ever s
       document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') { cal.classList.remove('show'); cal.setAttribute('aria-hidden','true'); } });
 
       function daysInMonth(y,m){return new Date(y,m+1,0).getDate();}
+
       function buildMonth(y,m){
         const wrap=document.createElement('div');wrap.className='month';
         const title=document.createElement('div');title.className='m-title';
@@ -1014,95 +1495,61 @@ Happy birthday, my love. I’m grateful for you more than these words can ever s
         for(let i=1;i<=remainder;i++){const d=document.createElement('div');d.className='day other';d.textContent=i;grid.appendChild(d);}
         wrap.appendChild(grid);return wrap;
       }
-      function buildYear(y){const grid=document.createElement('div');grid.className='month-wrap';for(let m=0;m<12;m++)grid.appendChild(buildMonth(y,m));return grid;}
 
-      const y2025 = document.getElementById('year2025');
-      const y2026 = document.getElementById('year2026');
-      y2025.innerHTML=''; y2026.innerHTML='';
-      y2025.appendChild(buildYear(2025));
-      y2026.appendChild(buildYear(2026));
-
-      let currentYear = 2025;
-      function switchYear(delta){
-        const next = currentYear + delta;
-        if (next < 2025 || next > 2026) return;
-        document.querySelectorAll('.year-page').forEach(el => {
-          el.classList.remove('visible');
-          el.classList.add('hidden');
-        });
-        const show = document.getElementById('year' + next);
-        show.classList.remove('hidden');
-        show.classList.add('visible');
-        currentYear = next;
-        titleEl.textContent = `Our Little Calendar — ${currentYear}`;
-        renderMarks();
+      function buildYear(y){
+        const grid=document.createElement('div');grid.className='month-wrap';
+        for(let m=0;m<12;m++)grid.appendChild(buildMonth(y,m));
+        return grid;
       }
-
-      document.getElementById('prevBtn').addEventListener('click', ()=>switchYear(-1));
-      document.getElementById('nextBtn').addEventListener('click', ()=>switchYear(1));
 
       function qDay(y,m1,d){
-        const page=document.getElementById('year'+y);
-        return [...page.querySelectorAll('.day')].find(el=>+el.dataset.y===y && +el.dataset.m===m1 && +el.dataset.d===d);
+        return [...document.querySelectorAll('#yearGrid .day')].find(el =>
+          +el.dataset.y===y && +el.dataset.m===m1 && +el.dataset.d===d
+        );
       }
 
-      (function mark2025(){
+      function markStaticAndBirthday(){
         const c1=qDay(2025,7,15); if(c1) c1.classList.add('pen-circle');
         const c2=qDay(2025,7,20); if(c2) c2.classList.add('pen-circle');
         for(let d=19; d<=22; d++){ const el=qDay(2025,8,d); if(el) el.classList.add('pen-underline'); }
-        const today=new Date();
-        let y=2025,m=8,d=23;
+
+        const b1 = qDay(2025,12,12);
+        if (b1){ b1.classList.add('pen-circle'); b1.title = "My Wife’s birthdayyyy 🎂"; }
+        const b2 = qDay(2026,12,12);
+        if (b2){ b2.classList.add('pen-circle'); b2.title = "My Wife’s birthdayyyy 🎂"; }
+      }
+
+      function markStreak(){
+        function daysInMonthLocal(y,m){return new Date(y,m,0).getDate();}
+        const today = new Date();
+        let y = 2025, m = 8, d = 23; // streak start
         while(true){
           const endY=today.getFullYear(), endM=today.getMonth()+1, endD=today.getDate();
           if(y>endY || (y===endY && (m>endM || (m===endM && d>endD)))) break;
-          const el=qDay(y,m,d); if(el) el.classList.add('pen-x');
-          const dim=daysInMonth(y,m-1); d++; if(d>dim){ d=1; m++; if(m>12){m=1;y++;} }
+          const el = qDay(y,m,d);
+          if(el) el.classList.add('pen-x');
+          const dim=daysInMonthLocal(y,m);
+          d++;
+          if(d>dim){ d=1; m++; if(m>12){m=1;y++;} }
         }
-      })();
-
-      function markBirthday(y){
-        const b = qDay(y,12,12);
-        if (b) { b.classList.add('pen-circle'); b.title = "My Wife’s birthdayyyy 🎂"; }
       }
-      markBirthday(2025);
-      markBirthday(2026);
-
-      function inclusiveDaysFrom(startY,startM1,startD){
-        const today=new Date();
-        const A=Date.UTC(startY,startM1-1,startD);
-        const B=Date.UTC(today.getFullYear(),today.getMonth(),today.getDate());
-        return Math.round((B-A)/86400000)+1;
-      }
-      function updateSince(){
-        const days=inclusiveDaysFrom(2025,8,22);
-        document.getElementById('sinceText').textContent=`Day ${days} since the last hangout`;
-      }
-      function updateCountdown(){
-        const now=new Date(); const pad=n=>String(n).padStart(2,'0');
-        document.getElementById('countdown').textContent=
-          `Next day in ${pad(23-now.getHours())}h:${pad(59-now.getMinutes())}m:${pad(59-now.getSeconds())}s`;
-      }
-      updateSince(); updateCountdown();
-      setInterval(()=>{updateSince();updateCountdown();},1000);
 
       let latestTags = {};
 
       function renderMarks() {
-        document.querySelectorAll('.day.tagged').forEach(el => {
+        document.querySelectorAll('#yearGrid .day.tagged').forEach(el => {
           el.classList.remove('tagged');
           el.removeAttribute('data-label');
         });
 
-        const yearShown = (document.getElementById('calTitle').textContent.match(/(\d{4})$/)||[])[1] || '2025';
+        const yearShown = (titleEl.textContent.match(/(\d{4})$/)||[])[1] || '2025';
         const chips = document.getElementById('calChips');
         chips.innerHTML = '';
 
         Object.entries(latestTags).forEach(([k,obj])=>{
           if(!obj || !k.startsWith(yearShown)) return;
           const [yy,mm,dd] = k.split('-').map(Number);
-          const el = [...document.querySelectorAll('.day')].find(e =>
-            +e.dataset.y===yy && +e.dataset.m===mm && +e.dataset.d===dd
-          );
+          const el = qDay(yy,mm,dd);
           if(el){
             el.classList.add('tagged');
             el.dataset.label = obj.label;
@@ -1126,6 +1573,27 @@ Happy birthday, my love. I’m grateful for you more than these words can ever s
           chips.appendChild(chip);
         }
       }
+
+      function renderYear(y){
+        if (!yearGrid) return;
+        yearGrid.innerHTML = '';
+        yearGrid.appendChild(buildYear(y));
+        markStaticAndBirthday();
+        markStreak();
+        renderMarks();
+      }
+
+      let currentYear = 2025;
+      function switchYear(delta){
+        const next = currentYear + delta;
+        if (next < 2025 || next > 2026) return;
+        currentYear = next;
+        titleEl.textContent = `Our Little Calendar — ${currentYear}`;
+        renderYear(currentYear);
+      }
+
+      document.getElementById('prevBtn').addEventListener('click', ()=>switchYear(-1));
+      document.getElementById('nextBtn').addEventListener('click', ()=>switchYear(1));
 
       const tagDate = document.getElementById('tagDate');
       const tagLabel = document.getElementById('tagLabel');
@@ -1155,7 +1623,30 @@ Happy birthday, my love. I’m grateful for you more than these words can ever s
         latestTags = snap.val() || {};
         renderMarks();
       });
+
+      function inclusiveDaysFrom(startY,startM1,startD){
+        const today=new Date();
+        const A=Date.UTC(startY,startM1-1,startD);
+        const B=Date.UTC(today.getFullYear(),today.getMonth(),today.getDate());
+        return Math.round((B-A)/86400000)+1;
+      }
+      function updateSince(){
+        const days=inclusiveDaysFrom(2025,8,22);
+        document.getElementById('sinceText').textContent=`Day ${days} since the last hangout`;
+      }
+      function updateCountdown(){
+        const now=new Date(); const pad=n=>String(n).padStart(2,'0');
+        document.getElementById('countdown').textContent=
+          `Next day in ${pad(23-now.getHours())}h:${pad(59-now.getMinutes())}m:${pad(59-now.getSeconds())}s`;
+      }
+
+      renderYear(currentYear);
+      updateSince(); updateCountdown();
+      setInterval(()=>{updateSince();updateCountdown();},1000);
     }
+
+    /* ====== Cake + Jar + unlock stuff ====== */
+    let cakeInitDone = false;
 
     function createConfetti(){
       const layer = document.getElementById('confettiLayer');
@@ -1183,17 +1674,53 @@ Happy birthday, my love. I’m grateful for you more than these words can ever s
 
       if (!btn || !hint || !overlay) return;
 
+      const progressTrack = btn.querySelector('.blowProgressTrack');
+      const progressFill  = btn.querySelector('.blowProgressFill');
+
       let timer = null;
-      const holdTime = 1000;
+      let progressAnim = null;
+      const holdTime = 2000; // ~2 seconds
+
+      function resetProgress() {
+        if (progressAnim) {
+          cancelAnimationFrame(progressAnim);
+          progressAnim = null;
+        }
+        if (progressFill)  progressFill.style.width = '0%';
+        if (progressTrack) progressTrack.style.opacity = '0';
+      }
 
       const startHold = (ev)=>{
         ev.preventDefault();
         if (timer) return;
+
         hint.textContent = 'Keep holding… almost there 🥹';
         overlay.classList.add('blowing');
+
+        if (progressTrack) progressTrack.style.opacity = '1';
+        if (progressFill)  progressFill.style.width = '0%';
+
+        const startTime = performance.now();
+
+        function step(now){
+          if (!timer) return; // cancelled
+          const elapsed = now - startTime;
+          const ratio = Math.min(elapsed / holdTime, 1);
+          if (progressFill) {
+            progressFill.style.width = (ratio * 100) + '%';
+          }
+          if (elapsed < holdTime) {
+            progressAnim = requestAnimationFrame(step);
+          }
+        }
+        progressAnim = requestAnimationFrame(step);
+
         timer = setTimeout(()=>{
           timer = null;
+          if (progressFill)  progressFill.style.width = '100%';
+          overlay.classList.remove('blowing');
           blowCandle();
+          setTimeout(resetProgress, 350);
         }, holdTime);
       };
 
@@ -1202,7 +1729,8 @@ Happy birthday, my love. I’m grateful for you more than these words can ever s
         clearTimeout(timer);
         timer = null;
         overlay.classList.remove('blowing');
-        hint.textContent = 'Hold the button to blow out the candle.';
+        hint.textContent = 'Hold the button to blow out the candle';
+        resetProgress();
       };
 
       ['mousedown','touchstart'].forEach(ev => btn.addEventListener(ev, startHold));
@@ -1215,50 +1743,411 @@ Happy birthday, my love. I’m grateful for you more than these words can ever s
       const cakeStage = document.getElementById('cakeStage');
       const cardStage = document.getElementById('cardStage');
       const cardDone  = document.getElementById('cardDoneBtn');
+      const transition= document.getElementById('cakeTransition');
+      const wrap      = document.querySelector('.cakeImgWrap');
 
       if (!overlay || !hint || !cakeStage || !cardStage || !cardDone) return;
 
       overlay.classList.remove('blowing');
-      overlay.classList.add('blowed');
+      overlay.classList.add('blowed','candlesOff');
       hint.textContent = 'Make a wish… 🥹🎂';
 
-      setTimeout(()=>{
-        cakeStage.classList.add('hidden');
-        cardStage.classList.add('show');
-      }, 900);
+      // Extra smoke puffs
+      if (wrap) {
+        for (let i=0; i<4; i++) {
+          const puff = document.createElement('div');
+          puff.className = 'cakeSmokePuff';
+          puff.style.left = (50 + (Math.random()*14 - 7)) + '%';
+          puff.style.animationDelay = (i * 0.18) + 's';
+          wrap.appendChild(puff);
+          setTimeout(()=> puff.remove(), 2200);
+        }
+      }
+
+      // Transition overlay between cake → card
+      if (transition) {
+        // Fade in transition
+        setTimeout(()=>{
+          transition.classList.add('show');
+
+          // Switch from cake stage to card while transition is up
+          setTimeout(()=>{
+            cakeStage.classList.add('hidden');
+            cardStage.classList.add('show');
+
+            // Fade the transition away
+            setTimeout(()=>{
+              transition.classList.add('fadeOut');
+              setTimeout(()=>{
+                transition.classList.remove('show','fadeOut');
+              }, 650);
+            }, 200);
+          }, 550);
+        }, 250);
+      } else {
+        // Fallback: just switch after a short delay
+        setTimeout(()=>{
+          cakeStage.classList.add('hidden');
+          cardStage.classList.add('show');
+        }, 900);
+      }
 
       cardDone.onclick = ()=>{
         overlay.classList.add('fadeOut');
         setTimeout(()=>{
-          overlay.classList.remove('show','fadeOut','blowed','blowing');
+          overlay.classList.remove('show','fadeOut','blowed','blowing','candlesOff');
         }, 800);
       };
     }
 
-function showBirthdayCakeIfNeeded(){
-  const overlay = document.getElementById('cakeOverlay');
-  if (!overlay) return;
+    function nowInMoroccoUtcMs() {
+      try {
+        const formatter = new Intl.DateTimeFormat('en-CA', {
+          timeZone: 'Africa/Casablanca',
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          hour12: false
+        });
+        const parts = formatter.formatToParts(new Date());
+        let y, m, d, h, min, s;
+        for (const p of parts) {
+          if (p.type === 'year') y = parseInt(p.value, 10);
+          else if (p.type === 'month') m = parseInt(p.value, 10);
+          else if (p.type === 'day') d = parseInt(p.value, 10);
+          else if (p.type === 'hour') h = parseInt(p.value, 10);
+          else if (p.type === 'minute') min = parseInt(p.value, 10);
+          else if (p.type === 'second') s = parseInt(p.value, 10);
+        }
+        if (y && m && d != null && h != null && min != null && s != null) {
+          return Date.UTC(y, m - 1, d, h, min, s);
+        }
+      } catch (e) {
+        console.error('Time zone check failed', e);
+      }
+      return Date.now();
+    }
 
-  const today = todayISO();
-  let shouldShow = false;
+    function moroccoDateISO() {
+      try {
+        const formatter = new Intl.DateTimeFormat('en-CA', {
+          timeZone: 'Africa/Casablanca',
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit'
+        });
+        return formatter.format(new Date()); // YYYY-MM-DD in Morocco time
+      } catch (e) {
+        console.error('Morocco date check failed, falling back to device date', e);
+        return todayISO();
+      }
+    }
 
-  // For testing: always show if FORCE_CAKE_PREVIEW is true
-  if (FORCE_CAKE_PREVIEW) {
-    shouldShow = true;
-  }
-  // Real birthday behavior:
-  // On 2025-12-12, ALWAYS show (no localStorage check)
-  else if (today === BDAY_DATE) {
-    shouldShow = true;
-  }
+    function isJarUnlockedMorocco() {
+      const nowMs = nowInMoroccoUtcMs();
+      const unlockMs = Date.UTC(2025, 11, 12, 0, 0, 0); // 12 Dec 2025 00:00, Mohammedia time
+      return nowMs >= unlockMs;
+    }
 
-  if (!shouldShow) return;
+    function isJarEnabled() {
+      if (JAR_PREVIEW) return true;
+      return isJarUnlockedMorocco();
+    }
 
-  overlay.classList.add('show');
-  createConfetti();
-  setupBlowButton();
-}
+    function showLoveJarToast(message){
+      const toast = document.getElementById('loveJarToast');
+      if (!toast) return;
+      toast.textContent = message;
+      toast.classList.add('show');
+      setTimeout(()=> toast.classList.remove('show'), 4500);
+    }
 
+    function initLoveJar(){
+      const loveJarMessages = [
+        "Your smile makes everything feel lighter.",
+        "The way you talk about the things that you love",
+        "Your laugh is my favorite sound.",
+        "How you make me feel like I’m chosen every single time",
+        "The way you say my name, like it belongs to you",
+        "Your softness even when you’re tired and overwhelmed",
+        "How you care so deeply for the people you love",
+        "The way you listen to me, even to the small things",
+        "Your tiny reactions when you get excited about something",
+        "Your voice I could recognise it in any crowd",
+        "Your heart is so pure, and  gentle",
+        "How beautiful you are without even trying",
+        "Your texts feel like home, even through a screen",
+        "How you calm me down even from 5000 kilometers away",
+        "How you love, honestly and fully",
+        "I love your presence, even when we just sit staring at eachother on call",
+        "Bceause of your sense of humorr hehe",
+        "You make me feel truly loved and cared for",
+        "Your so smart I love it",
+        "You are mature and wise",
+        "The way you talk to me and care about me",
+        "Your kind words that are full of love",
+        "you call me salouhi",
+        "you tell me that I'm handsomee",
+        "you tell me that I look good",
+        "you make me undertand that I'm important and that I matter to you",
+        "we joke around together about anything",
+        "You take time to text me even when you are busy",
+        "You put effort into trying to call me and text me",
+        "I love you because I feel that your love for me isn't forced and not one sided",
+        "Because you don't just love me for my looks but also personality",
+        "Because you love me, you love saleh and that really makes my heart bloom. This alone is everything for me, I'm truly so blessed to have you.",
+        "Because you love real me, and you take care of me.",
+        "You are careful about what you say, you don't like to hurt me and you are so careful on not to hurt my feelings.",
+        "I love you because you are charming",
+        "You are everything to me",
+        "Because you are who you are when you are around me and you don't fake things around me",
+        "Because you are gentle with my heart (You carry it)",
+        "I love you because you’re not just my love, you’re my best friend",
+        "I love you because you’re patient with me, even when I’m annoying",
+        "You are sooooooooo patient with me and I love that about you even whem I'm sooo annoying at times",
+        "I love you because you believe in us, even when things are hard",
+        "You don't just pull out when things get hard, you fight for our relationship",
+        "You do everything to help this relationship as much as you can, I know it",
+        "I love you because your existence alone makes my life better",
+        "I love you because loving you feels natural, not forced",
+        "The way you dream about the future with me in it",
+        "Simply you, That’s more than enough",
+        "Because you see sides of me no one else does",
+        "You understand me like no one else",
+        "I love how I can talk to you about anything without being judged",
+        "I love the conversations that we have",
+        "Because you make me feel like a great person",
+        "Because you push me to become a better version of myself",
+        "You are truly my life savior",
+        "normal days with you feel special",
+        "Hours with you feel like minutes",
+        "Spending time with you is so enjoyable",
+        "You don't take me for granted",
+        "No one is like you, and even if there was I'd want you only",
+        "You make me feel chosen, not just liked",
+        "Your voice is the calm to my stress",
+        "I love you because you never make me feel like I’m “too much.”",
+        "I love you because talking to you feels like coming home.",
+        "I love you because you don’t just listen, you actually understand.",
+        "I love you because you’re honest with me, even when it’s hard.",
+        "You don't hide things from me (that cured my trust issues)",
+        "You are so interested in my conversations that makes me feel beloved",
+        "Because you take time to learn more about me and my background, that makes me feel wanted",
+        "Your messages always come at the right time, like you sense my emotions",
+        "You are there when I need you",
+        "The way you comfort me when I overthink, THE WAY YOU COMFORT ME WHEN I OVERTHINKKK",
+        "You make me feel like I’m worth loving fully",
+        "Your loyaltyyy that is top",
+        "You don’t judge me for being emotional or sensitive (When im crying)",
+        "Your expressions even the little ones mean everything to me",
+        "You make me feel seen",
+        "You understand my silence and my words equally",
+        "Because somehow, you make me want forever",
+        "Because loving you healed parts of me I didn’t even know were hurting, Being with you feels like my heart finally found where it belongs",
+        "Because your love makes me feel like I’m worth something",
+        "Because when you say “I love you” I don’t just hear it i feeeeel it",
+        "Because even through a screen, your presence makes my world softer, kinder, and lighter",
+        "Because loving you is special and i'd wait for so long just to see you in person again",
+        "Because when you look at me, even through a pixelated call, I feel chosen in a way I’ve never felt before",
+        "Because you make my heart feel understood, not judged",
+        "Because you feel like the kind of love people spend their whole lives searching for",
+        "Because you are the right one.",
+        "I love you because you somehow make even the most boring updates in my day feel worth telling",
+        "I love you because loving you has taught me patience, softness, and strength, You make me believe that real love isn’t rushed, it grows, it heals, and stays",
+        "I love you because you’re the one person I never feel the need to pretend for. With you, even the parts of me I’m insecure about feel safe enough to come out",
+        "I love you because you bring a kind of stability into my emotions that I didn’t know was possible. You quiet my overthinking without even trying, just by being you",
+        "I love you because every time something happens in my life, you’re the first person I want to tell, the good or bad, It’s like my experiences don’t feel complete until you’ve been part of them",
+        "I love you because you make my future feel less like a question and more like something I can actually picture. You’re the first person who made “someday” feel real to me",
+        "I love you because you give me something to look forward to every day",
+        "I love you because your presence turns any moment into something I want to remember",
+        "I love you because you see my flaws without making me feel small",
+        "I love you because even on days we don’t talk much, you’re still the closest person to me",
+        "I love you because you are the sweetest, and kindest person in this earth. You truly carry my heart",
+        "Because you are Khadeja, my Khadeja and only Khadeja forever till the day I die. I'll love you forever even after death. I love you Khadeja."
+      ];
+
+      const jarBtn    = document.getElementById('loveJarBtn');
+      const overlay   = document.getElementById('loveJarOverlay');
+      const paper     = document.getElementById('loveJarPaper');
+      const textEl    = document.getElementById('loveJarText');
+      const closeBtn  = document.getElementById('loveJarCloseBtn');
+      const countLbl  = document.getElementById('loveJarCountLabel');
+      const jarPapers = document.getElementById('loveJarPapers');
+
+      if (!jarBtn || !overlay || !paper || !textEl || !closeBtn || !countLbl || !jarPapers) return;
+
+      const MAX_REASONS = 100;
+
+      let loveJarReasonIndex = 0;
+      let jarCompletionShown = false;
+
+      (function restoreJarProgress(){
+        try {
+          const raw = localStorage.getItem(JAR_PROGRESS_KEY);
+          if (raw != null) {
+            const parsed = parseInt(raw, 10);
+            if (!Number.isNaN(parsed) && parsed >= 1 && parsed <= MAX_REASONS) {
+              loveJarReasonIndex = parsed;
+            }
+          }
+          const doneRaw = localStorage.getItem(JAR_COMPLETE_KEY);
+          if (doneRaw === '1') {
+            jarCompletionShown = true;
+          }
+        } catch (e) {
+          console.warn('Could not restore jar progress', e);
+        }
+      })();
+
+      const STRIP_COUNT = 90;
+      const STRIP_W = 64;
+      const STRIP_H = 20;
+
+      function randomBetween(min, max){
+        return min + Math.random() * (max - min);
+      }
+
+      function assignRandomPosition(el, w, h){
+        const minX = -12;
+        const maxX = w - STRIP_W + 12;
+        const minY = -6;
+        const maxY = h - STRIP_H + 10;
+
+        const x = randomBetween(minX, maxX);
+        const y = randomBetween(minY, maxY);
+        const rot = (Math.random()*50 - 25).toFixed(1);
+
+        el.style.left = x + 'px';
+        el.style.top  = y + 'px';
+        el.style.setProperty('--r', rot + 'deg');
+        el.style.zIndex = String(5 + Math.floor(Math.random()*40));
+      }
+
+      function populatePapers(initial){
+        const boxRect = jarPapers.getBoundingClientRect();
+        const w = boxRect.width  || 130;
+        const h = boxRect.height || 170;
+
+        if (initial){
+          jarPapers.innerHTML = "";
+          for (let i=0;i<STRIP_COUNT;i++){
+            const el = document.createElement('div');
+            el.className = 'loveJarStrip';
+            assignRandomPosition(el, w, h);
+            jarPapers.appendChild(el);
+          }
+        } else {
+          const strips = jarPapers.children;
+          for (let i=0;i<strips.length;i++){
+            assignRandomPosition(strips[i], w, h);
+          }
+        }
+      }
+
+      populatePapers(true);
+
+      function pickMessageByIndex(reasonIndex){
+        const idx = (reasonIndex - 1) % loveJarMessages.length;
+        return loveJarMessages[idx];
+      }
+
+      function triggerJarShake(){
+        populatePapers(false);
+        jarBtn.classList.add('loveJarShake');
+        jarPapers.classList.add('loveJarPapersShake');
+        setTimeout(()=> populatePapers(false), 200);
+        setTimeout(() => {
+          jarBtn.classList.remove('loveJarShake');
+          jarPapers.classList.remove('loveJarPapersShake');
+        }, 460);
+      }
+
+      function openLoveJar(){
+        // move to next reason
+        loveJarReasonIndex = (loveJarReasonIndex % MAX_REASONS) + 1;
+
+        // save progress
+        try {
+          localStorage.setItem(JAR_PROGRESS_KEY, String(loveJarReasonIndex));
+        } catch (e) {
+          console.warn('Could not save jar progress', e);
+        }
+
+        // If they just reached 100 for the first time – show popup
+        if (loveJarReasonIndex === MAX_REASONS && !jarCompletionShown) {
+          jarCompletionShown = true;
+          try {
+            localStorage.setItem(JAR_COMPLETE_KEY, '1');
+          } catch (e) {}
+          showLoveJarToast(
+            'You finished all 100 reasons baby! You can reopen the jar anytime to reread them if you wannttt'
+          );
+        }
+
+        const message = pickMessageByIndex(loveJarReasonIndex);
+        textEl.textContent = message;
+        countLbl.textContent = `Reason ${loveJarReasonIndex} of ${MAX_REASONS}`;
+
+        triggerJarShake();
+
+        paper.classList.remove('is-open');
+        paper.classList.add('is-folded');
+
+        setTimeout(() => {
+          overlay.classList.add('show');
+          requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+              paper.classList.remove('is-folded');
+              paper.classList.add('is-open');
+            });
+          });
+        }, 120);
+      }
+
+      function closeLoveJar(){
+        overlay.classList.remove('show');
+        paper.classList.remove('is-open');
+        paper.classList.add('is-folded');
+      }
+
+      jarBtn.addEventListener('click', openLoveJar);
+      closeBtn.addEventListener('click', closeLoveJar);
+      overlay.addEventListener('click', function(e){
+        if (e.target === overlay) closeLoveJar();
+      });
+      document.addEventListener('keydown', function(e){
+        if (e.key === 'Escape' && overlay.classList.contains('show')) {
+          closeLoveJar();
+        }
+      });
+    }
+
+    function showBirthdayCakeIfNeeded(){
+      const overlay = document.getElementById('cakeOverlay');
+      if (!overlay) return;
+
+      let shouldShow = false;
+
+      if (FORCE_CAKE_PREVIEW) {
+        // Testing mode – always show
+        shouldShow = true;
+      } else {
+        // Use HER timezone (Mohammedia / Casablanca)
+        const moroccoDate = moroccoDateISO(); // "2025-12-12" in Africa/Casablanca
+        if (moroccoDate === BDAY_DATE) {
+          shouldShow = true;
+        }
+      }
+
+      if (!shouldShow) return;
+
+      overlay.classList.add('show');
+      createConfetti();
+      setupBlowButton();
+    }
 
     function unlock(){
       const val = document.getElementById('codeField').value.trim();
@@ -1288,5 +2177,8 @@ function showBirthdayCakeIfNeeded(){
       }catch(e){ console.error('[Self-tests] FAIL', e); }
     })();
   </script>
+
+  <div id="loveJarToast" class="loveJarToast" aria-live="polite"></div>
+
 </body>
 </html>
