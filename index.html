@@ -2126,28 +2126,28 @@ Happy birthday, my love. I’m grateful for you more than these words can ever s
     }
 
     function showBirthdayCakeIfNeeded(){
-  const overlay = document.getElementById('cakeOverlay');
-  if (!overlay) return;
+      const overlay = document.getElementById('cakeOverlay');
+      if (!overlay) return;
 
-  let shouldShow = false;
+      let shouldShow = false;
 
-  if (FORCE_CAKE_PREVIEW) {
-    // Testing mode – always show
-    shouldShow = true;
-  } else {
-    // Use HER timezone (Mohammedia / Casablanca)
-    const moroccoDate = moroccoDateISO(); // "2025-12-12" in Africa/Casablanca
-    if (moroccoDate === BDAY_DATE) {
-      shouldShow = true;
+      if (FORCE_CAKE_PREVIEW) {
+        // Testing mode – always show
+        shouldShow = true;
+      } else {
+        // Use HER timezone (Mohammedia / Casablanca)
+        const moroccoDate = moroccoDateISO(); // "2025-12-12" in Africa/Casablanca
+        if (moroccoDate === BDAY_DATE) {
+          shouldShow = true;
+        }
+      }
+
+      if (!shouldShow) return;
+
+      overlay.classList.add('show');
+      createConfetti();
+      setupBlowButton();
     }
-  }
-
-  if (!shouldShow) return;
-
-  overlay.classList.add('show');
-  createConfetti();
-  setupBlowButton();
-}
 
     function unlock(){
       const val = document.getElementById('codeField').value.trim();
@@ -2182,3 +2182,4 @@ Happy birthday, my love. I’m grateful for you more than these words can ever s
 
 </body>
 </html>
+
