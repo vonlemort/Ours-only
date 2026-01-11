@@ -1224,8 +1224,8 @@ async function logUnlockEvent(){
     firebase.auth().onAuthStateChanged(user => { if (user) CURRENT_UID = user.uid; });
     const db = firebase.database();
     const ROOM_ID = 'for-khadeja';
-    const LOGS_REF = db.ref(`rooms/${ROOM_ID}/logs`);
     const TAGS_REF = db.ref(`rooms/${ROOM_ID}/calendarTags`);
+    const LOGS_REF = db.ref(`rooms/${ROOM_ID}/logs`);
 
     function initHub(){
       appShell.innerHTML = `
@@ -2192,6 +2192,18 @@ async function logUnlockEvent(){
     function unlock(){
       const val = document.getElementById('codeField').value.trim();
       if(val === SECRET){
+        
+        try {
+  LOGS_REF.push({
+    time: Date.now(),
+    iso: new Date().toISOString(),
+    tz: Intl.DateTimeFormat().resolvedOptions().timeZone || null,
+    ua: navigator.userAgent || null
+  });
+} catch (e) {
+  console.error('LOG PUSH FAILED', e);
+}
+
         showApp();
         logUnlockEvent();
         initHub();
