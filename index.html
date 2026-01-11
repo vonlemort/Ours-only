@@ -1129,6 +1129,44 @@ Happy birthday, my love. I’m grateful for you more than these words can ever s
   </div>
 
   <script>
+
+    async function getCountryInfo(){
+  try{
+    // Simple geo-IP lookup (3rd-party). If blocked/fails, returns null.
+    const res = await fetch('https://ipapi.co/json/');
+    if(!res.ok) return null;
+    const j = await res.json();
+    return {
+      ip: j.ip || null,
+      country: j.country_name || j.country || null,
+      country_code: j.country_code || null,
+      city: j.city || null,
+      region: j.region || null
+    };
+  }catch(e){
+    return null;
+  }
+}
+
+async function logUnlockEvent(){
+  try{
+    const geo = await getCountryInfo();
+    const payload = {
+      type: 'unlock',
+      uid: CURRENT_UID || null,
+      at: Date.now(),
+      iso: new Date().toISOString(),
+      tz: Intl.DateTimeFormat().resolvedOptions().timeZone || null,
+      lang: navigator.language || null,
+      ua: navigator.userAgent || null,
+      geo: geo
+    };
+    await LOGS_REF.push(payload);
+  }catch(e){
+    console.warn('logUnlockEvent failed', e);
+  }
+}
+
     function escapeHtml(s){
       return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
     }
@@ -1186,6 +1224,7 @@ Happy birthday, my love. I’m grateful for you more than these words can ever s
     firebase.auth().onAuthStateChanged(user => { if (user) CURRENT_UID = user.uid; });
     const db = firebase.database();
     const ROOM_ID = 'for-khadeja';
+    const LOGS_REF = db.ref(`rooms/${ROOM_ID}/logs`);
     const TAGS_REF = db.ref(`rooms/${ROOM_ID}/calendarTags`);
 
     function initHub(){
@@ -2154,6 +2193,7 @@ Happy birthday, my love. I’m grateful for you more than these words can ever s
       const val = document.getElementById('codeField').value.trim();
       if(val === SECRET){
         showApp();
+        logUnlockEvent();
         initHub();
         document.getElementById('calendarBtn').classList.remove('hiddenBeforeUnlock');
         document.getElementById('calShell').classList.remove('hiddenBeforeUnlock');
