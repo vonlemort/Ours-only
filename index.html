@@ -2190,38 +2190,20 @@ async function logUnlockEvent(){
       setupBlowButton();
     }
 
-    async function getCountry(){
-  try {
-    const res = await fetch("https://ipapi.co/json/");
-    if (!res.ok) return null;
-    const data = await res.json();
-    return data.country_code || null; // e.g. "MA"
-  } catch(e){
-    return null;
-  }
-}
-
-
-    async function unlock(){
-    try {
-  const country = await getCountry();
-
-  if (country === "MA") {   // MA = Morocco
-    LOGS_REF.push({
-      time: Date.now(),
-      iso: new Date().toISOString(),
-      tz: Intl.DateTimeFormat().resolvedOptions().timeZone || null,
-      ua: navigator.userAgent || null,
-      country: country
-    });
-  } else {
-    console.log("Log blocked: not Morocco");
-  }
-
+    function unlock(){
+      const val = document.getElementById('codeField').value.trim();
+      if(val === SECRET){
+        
+        try {
+  LOGS_REF.push({
+    time: Date.now(),
+    iso: new Date().toISOString(),
+    tz: Intl.DateTimeFormat().resolvedOptions().timeZone || null,
+    ua: navigator.userAgent || null
+  });
 } catch (e) {
-  console.error("Geo check failed", e);
+  console.error('LOG PUSH FAILED', e);
 }
-  
 
         showApp();
         logUnlockEvent();
