@@ -2685,9 +2685,9 @@ function openPage(p){
     cuteFooter.style.display='none';
 
     if(p==='flowers') renderFlowers();
+    if(p==='voicenotes') loadVoiceNotes();
   }
 }
-
     function openLightbox(src, isVideo) {
       const lb = document.getElementById('lightbox');
       const box = document.getElementById('lbContent');
@@ -3780,7 +3780,7 @@ sendBtn.addEventListener('click', async () => {
       holdBtn.addEventListener('touchcancel', onHoldEnd,   { passive: false });
 
       /* ---- Render pinned card ---- */
-      function renderVNCard(key, n, skipIfExists) {
+      window.renderVNCard = function(key, n, skipIfExists) {
         if (skipIfExists && document.getElementById('vnc-' + key)) return;
         const card = document.createElement('div');
         card.className = 'vnCard';
@@ -3853,7 +3853,11 @@ sendBtn.addEventListener('click', async () => {
         });
      }
 
-      /* ---- Load from Firebase in real time ---- */
+}
+
+    function loadVoiceNotes() {
+      const board = document.getElementById('vnNotesBoard');
+      if (!board) return;
       db.ref(`rooms/${ROOM_ID}/voicenotes`).on('value', snap => {
         const data = snap.val();
         if (!data) { board.innerHTML = ''; return; }
@@ -3869,7 +3873,6 @@ sendBtn.addEventListener('click', async () => {
           }
         }
       });
-
     }
 
     function fmtSec(t) {
