@@ -11,6 +11,7 @@
   <meta name="robots" content="noindex, nofollow">
 
   <style>
+    
     :root {
       --bg1: #fff6fb;
       --accent: #ff6fa6;
@@ -1856,12 +1857,238 @@
       bottom: 0;
       transform: translateY(2px);
     }
+
+/* ---- Voice Notes ---- */
+.vnInputRow {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+  flex-direction: column;
+  align-items: center;
+}
+.vnRecordArea {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 0 6px;
+}
+.vnHoldBtn {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  border: none;
+  background: var(--accent);
+  color: #fff;
+  font-size: 30px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 18px rgba(255, 111, 166, 0.35);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+  position: relative;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+  /* make sure the whole circle is the hitbox */
+  padding: 0;
+  line-height: 1;
+}
+.vnHoldBtn.recording {
+  transform: scale(1.22);
+  background: #e8004e;
+  box-shadow:
+    0 0 0 8px rgba(255, 0, 80, 0.18),
+    0 0 0 16px rgba(255, 0, 80, 0.09),
+    0 8px 30px rgba(255, 0, 80, 0.45);
+  animation: vnPulseRing 1s ease-in-out infinite;
+}
+@keyframes vnPulseRing {
+  0%, 100% { box-shadow: 0 0 0 8px rgba(255,0,80,0.18), 0 0 0 16px rgba(255,0,80,0.09), 0 8px 30px rgba(255,0,80,0.45); }
+  50%       { box-shadow: 0 0 0 14px rgba(255,0,80,0.13), 0 0 0 26px rgba(255,0,80,0.05), 0 8px 30px rgba(255,0,80,0.45); }
+}
+.vnHoldHint {
+  font-size: 13px;
+  color: var(--muted);
+  opacity: 0.85;
+  margin-top: 2px;
+  text-align: center;
+}
+.vnHoldHint.active {
+  color: #e8004e;
+  font-weight: 700;
+}
+.vnLiveWave {
+  width: 240px;
+  height: 40px;
+  border-radius: 10px;
+  background: rgba(255, 111, 166, 0.06);
+  display: none;
+}
+.vnLiveWave.show { display: block; }
+.vnPreview {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  background: linear-gradient(180deg, #fff, #fff0fb);
+  border-radius: 14px;
+  box-shadow: 0 8px 22px rgba(255, 111, 166, 0.12);
+  max-width: 340px;
+  width: 100%;
+  margin: 0 auto;
+}
+.vnPreview.show { display: flex; }
+.vnPreviewWave {
+  width: 100%;
+  height: 42px;
+  border-radius: 10px;
+  background: rgba(255, 111, 166, 0.06);
+  cursor: pointer;
+}
+.vnPreviewRow {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  width: 100%;
+}
+.vnPreviewPlayBtn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  background: var(--accent);
+  color: #fff;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(255,111,166,0.35);
+  flex-shrink: 0;
+}
+.vnPreviewTime {
+  font-size: 12px;
+  color: var(--muted);
+  min-width: 36px;
+  text-align: right;
+  flex-shrink: 0;
+}
+.vnPreviewActions {
+  display: flex;
+  gap: 8px;
+}
+.vnCancelBtn {
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,111,166,0.3);
+  background: #fff;
+  color: var(--muted);
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 13px;
+  font-family: 'Quicksand', sans-serif;
+}
+.vnSendBtn {
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: none;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 13px;
+  font-family: 'Quicksand', sans-serif;
+}
+/* Voice note card on board */
+.vnCard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background: var(--paper);
+  padding: 26px 16px 14px;
+  border-radius: 10px;
+  box-shadow: 0 8px 22px rgba(0,0,0,0.15);
+  transform: rotate(calc(-3deg + 6deg * var(--r)));
+  overflow: visible;
+}
+.vnCard .vnCardWaveWrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.vnCardPlayBtn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background: var(--accent);
+  color: #fff;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 4px 10px rgba(255,111,166,0.3);
+}
+.vnCardCanvas {
+  flex: 1;
+  height: 36px;
+  border-radius: 8px;
+  background: rgba(255,111,166,0.07);
+  cursor: pointer;
+  min-width: 0;
+}
+.vnCardTime {
+  font-size: 11px;
+  color: #8b6b73;
+  min-width: 34px;
+  text-align: right;
+  flex-shrink: 0;
+}
+.vnCardFooter {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px dashed #e0cbd3;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+}
+.vnCardFooter small {
+  display: block;
+  color: #8b6b73;
+  font-size: 12px;
+}
+.vnNotesBoard {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 18px;
+  background: linear-gradient(180deg, #fff0fb, #fff);
+  padding: 20px;
+  border-radius: 14px;
+}
+
+/* Mobile responsive */
+@media (max-width: 500px) {
+  .vnHoldBtn { width: 90px; height: 90px; font-size: 34px; }
+  .vnNotesBoard { grid-template-columns: 1fr; padding: 14px; }
+  .vnCard { transform: none; }
+  .vnPreview { max-width: 100%; }
+}
+
   </style>
 
   <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
 </head>
 
 <body>
@@ -2192,6 +2419,11 @@ const flowerPhotos = [
     <div class="desc">Write anything you desire to tell me here, Khadeja my lovee</div>
   </div>
 
+  <div class="bigBtn" onclick="openPage('voicenotes')">🎙️
+  <div class="label">Voice Notes</div>
+  <div class="desc">Record and pin voice messages for each other</div>
+</div>
+
   <div class="bigBtn" onclick="openPage('songs')">🎵
     <div class="label">Songs</div>
     <div class="desc">Songs that remind me of usss</div>
@@ -2229,6 +2461,31 @@ const flowerPhotos = [
             </div>
             <div class="notesBoard" id="notesBoard"></div>
           </section>
+
+
+<section id="voicenotes" class="page">
+            <div class="backRow"><button class="backBtn" onclick="openPage('hub')">← Back</button></div>
+            <div class="vnInputRow">
+              <div class="vnRecordArea">
+                <canvas class="vnLiveWave" id="vnLiveWave" width="240" height="40"></canvas>
+                <button class="vnHoldBtn" id="vnHoldBtn" type="button">🎙️</button>
+                <div class="vnHoldHint" id="vnHoldHint">Hold to record</div>
+              </div>
+              <div class="vnPreview" id="vnPreview">
+                <div class="vnPreviewRow">
+                  <button class="vnPreviewPlayBtn" id="vnPreviewPlayBtn">▶</button>
+                  <canvas class="vnPreviewWave" id="vnPreviewWave" width="260" height="42"></canvas>
+                  <span class="vnPreviewTime" id="vnPreviewTime">0:00</span>
+                </div>
+                <div class="vnPreviewActions">
+                  <button class="vnCancelBtn" id="vnCancelBtn">✕ Cancel</button>
+                  <button class="vnSendBtn" id="vnSendBtn">📌 Pin it</button>
+                </div>
+              </div>
+            </div>
+            <div class="vnNotesBoard" id="vnNotesBoard"></div>
+          </section>
+
 
           <section id="songs" class="page">
             <div class="backRow"><button class="backBtn" onclick="openPage('hub')">← Back</button></div>
@@ -2401,6 +2658,8 @@ const flowerPhotos = [
         document.getElementById('photoCats').style.display = 'flex';
         document.getElementById('polaroidGrid').innerHTML = '';
       }
+
+  initVoiceNotes();
 
       /* JAR VISIBILITY + INIT */
       const jarEnabled = isJarEnabled();
@@ -3213,6 +3472,409 @@ function openPage(p){
       } catch (e) { console.error('[Self-tests] FAIL', e); }
     })();
 
+/* ======== VOICE NOTES ======== */
+    function initVoiceNotes() {
+      const holdBtn    = document.getElementById('vnHoldBtn');
+      const hint       = document.getElementById('vnHoldHint');
+      const liveCanvas = document.getElementById('vnLiveWave');
+      const preview    = document.getElementById('vnPreview');
+      const prevWave   = document.getElementById('vnPreviewWave');
+      const prevPlay   = document.getElementById('vnPreviewPlayBtn');
+      const prevTime   = document.getElementById('vnPreviewTime');
+      const cancelBtn  = document.getElementById('vnCancelBtn');
+      const sendBtn    = document.getElementById('vnSendBtn');
+      const board      = document.getElementById('vnNotesBoard');
+      if (!holdBtn || !board) return;
+
+      let mediaRec = null, audioChunks = [], liveAnim = null;
+      let analyser = null, liveAudioCtx = null, sourceNode = null;
+      let recordedDataURL = null, recordedBlob = null;
+      let previewAudio = null, previewPlaying = false;
+      let previewBuffer = null, previewDecCtx = null;
+      let isHolding = false;
+      let micStream = null;
+
+      /* ---- Get mic (cached after first grant) ---- */
+      async function ensureMic() {
+        if (micStream && micStream.active) return micStream;
+        micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        return micStream;
+      }
+
+      /* ---- AudioContext — always created fresh per action ---- */
+      function makeAudioCtx() {
+        return new (window.AudioContext || window.webkitAudioContext)();
+      }
+
+      /* ---- Live waveform ---- */
+      function drawLiveWave() {
+        if (!analyser) return;
+        const ctx = liveCanvas.getContext('2d');
+        const W = liveCanvas.width, H = liveCanvas.height;
+        const buf = new Uint8Array(analyser.frequencyBinCount);
+        function frame() {
+          liveAnim = requestAnimationFrame(frame);
+          analyser.getByteTimeDomainData(buf);
+          ctx.clearRect(0, 0, W, H);
+          ctx.strokeStyle = '#ff6fa6';
+          ctx.lineWidth = 2.5;
+          ctx.lineJoin = 'round';
+          ctx.beginPath();
+          const step = W / buf.length;
+          buf.forEach((v, i) => {
+            const y = ((v / 128) - 1) * (H / 2) + H / 2;
+            i === 0 ? ctx.moveTo(0, y) : ctx.lineTo(i * step, y);
+          });
+          ctx.stroke();
+        }
+        frame();
+      }
+      function stopLiveWave() {
+        if (liveAnim) { cancelAnimationFrame(liveAnim); liveAnim = null; }
+        const ctx = liveCanvas.getContext('2d');
+        ctx.clearRect(0, 0, liveCanvas.width, liveCanvas.height);
+      }
+
+      /* ---- Draw static waveform ---- */
+      function drawStaticWave(canvas, audioBuffer, progress) {
+        const ctx = canvas.getContext('2d');
+        const W = canvas.width, H = canvas.height;
+        ctx.clearRect(0, 0, W, H);
+        const data = audioBuffer.getChannelData(0);
+        const step = Math.max(1, Math.ceil(data.length / W));
+        const mid = H / 2;
+        const cutoff = Math.floor(W * Math.min(Math.max(progress, 0), 1));
+        for (let x = 0; x < W; x++) {
+          let max = 0;
+          for (let j = 0; j < step; j++) {
+            const abs = Math.abs(data[x * step + j] || 0);
+            if (abs > max) max = abs;
+          }
+          const h = Math.max(2, max * (H * 0.85));
+          ctx.fillStyle = x < cutoff ? '#ff6fa6' : 'rgba(255,111,166,0.22)';
+          ctx.fillRect(x, mid - h / 2, 1, h);
+        }
+      }
+
+      function drawFlatWave(canvas) {
+        const ctx = canvas.getContext('2d');
+        const W = canvas.width, H = canvas.height;
+        ctx.clearRect(0, 0, W, H);
+        ctx.fillStyle = 'rgba(255,111,166,0.22)';
+        ctx.fillRect(0, H / 2 - 1, W, 2);
+      }
+
+      /* ---- Decode audio into buffer (mobile safe) ---- */
+      function decodeAudio(dataURL) {
+        return new Promise((resolve, reject) => {
+          const actx = makeAudioCtx();
+          fetch(dataURL)
+            .then(r => r.arrayBuffer())
+            .then(buf => actx.decodeAudioData(buf, resolve, reject))
+            .catch(reject);
+        });
+      }
+
+      /* ---- Start recording ---- */
+      async function onHoldStart(e) {
+        e.preventDefault();
+        if (isHolding) return;
+        isHolding = true;
+        try {
+          const stream = await ensureMic();
+          if (!isHolding) return;
+
+          // Fresh AudioContext for live waveform
+          if (liveAudioCtx) { try { liveAudioCtx.close(); } catch(err){} }
+          liveAudioCtx = makeAudioCtx();
+          analyser = liveAudioCtx.createAnalyser();
+          analyser.fftSize = 256;
+          sourceNode = liveAudioCtx.createMediaStreamSource(stream);
+          sourceNode.connect(analyser);
+
+          // Pick best supported format for this device
+          const mimeType = ['audio/webm;codecs=opus','audio/webm','audio/ogg;codecs=opus','audio/mp4','audio/aac','']
+            .find(m => m === '' || MediaRecorder.isTypeSupported(m)) || '';
+
+          mediaRec = new MediaRecorder(stream, mimeType ? { mimeType } : {});
+          audioChunks = [];
+          mediaRec.ondataavailable = ev => { if (ev.data && ev.data.size > 0) audioChunks.push(ev.data); };
+          mediaRec.onstop = onRecStop;
+          mediaRec.start(100); // collect chunks every 100ms — important for iOS
+
+          holdBtn.classList.add('recording');
+          hint.textContent = 'Recording… release when done 🎙️';
+          hint.classList.add('active');
+          liveCanvas.classList.add('show');
+          preview.classList.remove('show');
+          recordedDataURL = null;
+          recordedBlob = null;
+          drawLiveWave();
+        } catch (err) {
+          isHolding = false;
+          hint.textContent = 'Mic access needed — allow it and try again';
+          hint.classList.remove('active');
+          console.error('Mic error:', err);
+        }
+      }
+
+      /* ---- Stop recording ---- */
+      function onHoldEnd(e) {
+        if (e) e.preventDefault();
+        isHolding = false;
+        if (!mediaRec || mediaRec.state !== 'recording') return;
+        mediaRec.stop();
+        holdBtn.classList.remove('recording');
+        holdBtn.textContent = '🎙️';
+        hint.textContent = 'Hold to record';
+        hint.classList.remove('active');
+        stopLiveWave();
+        liveCanvas.classList.remove('show');
+        if (liveAudioCtx) { try { liveAudioCtx.close(); } catch(err){} liveAudioCtx = null; }
+      }
+
+      /* ---- After stop: build blob → dataURL → show preview ---- */
+      function onRecStop() {
+        if (!audioChunks.length) return;
+        const mimeType = mediaRec.mimeType || 'audio/webm';
+        recordedBlob = new Blob(audioChunks, { type: mimeType });
+        if (recordedBlob.size < 500) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+          recordedDataURL = reader.result;
+          showPreview(recordedDataURL);
+        };
+        reader.readAsDataURL(recordedBlob);
+      }
+
+      /* ---- Preview ---- */
+      async function showPreview(dataURL) {
+        preview.classList.add('show');
+        drawFlatWave(prevWave);
+        prevTime.textContent = '…';
+
+        // Use plain Audio element — most reliable on mobile
+        if (previewAudio) { previewAudio.pause(); previewAudio = null; }
+        previewAudio = new Audio();
+        previewAudio.preload = 'auto';
+        previewAudio.src = dataURL;
+        previewPlaying = false;
+        prevPlay.textContent = '▶';
+        prevPlay.style.background = 'var(--accent)';
+
+        previewAudio.onended = () => {
+          previewPlaying = false;
+          prevPlay.textContent = '▶';
+          prevPlay.style.background = 'var(--accent)';
+          if (previewBuffer) drawStaticWave(prevWave, previewBuffer, 0);
+          prevTime.textContent = fmtSec(previewBuffer ? previewBuffer.duration : 0);
+        };
+
+        // Decode for waveform display (separate from playback)
+        try {
+          previewBuffer = await decodeAudio(dataURL);
+          drawStaticWave(prevWave, previewBuffer, 0);
+          prevTime.textContent = fmtSec(previewBuffer.duration);
+          previewAudio.ontimeupdate = () => {
+            if (!previewBuffer) return;
+            drawStaticWave(prevWave, previewBuffer, previewAudio.currentTime / (previewAudio.duration || 1));
+            prevTime.textContent = fmtSec(previewAudio.currentTime);
+          };
+        } catch(err) {
+          console.warn('Preview decode failed:', err);
+          prevTime.textContent = '0:00';
+        }
+      }
+
+      /* ---- Preview controls ---- */
+      prevPlay.addEventListener('click', () => {
+        if (!previewAudio) return;
+        if (previewPlaying) {
+          previewAudio.pause();
+          previewPlaying = false;
+          prevPlay.textContent = '▶';
+          prevPlay.style.background = 'var(--accent)';
+        } else {
+          previewAudio.play().catch(err => console.warn('Preview play failed:', err));
+          previewPlaying = true;
+          prevPlay.textContent = '❚❚';
+          prevPlay.style.background = '#e8004e';
+        }
+      });
+
+      prevWave.addEventListener('click', e => {
+        if (!previewAudio || !previewAudio.duration) return;
+        const r = prevWave.getBoundingClientRect();
+        previewAudio.currentTime = ((e.clientX - r.left) / r.width) * previewAudio.duration;
+      });
+
+      cancelBtn.addEventListener('click', () => {
+        if (previewAudio) { previewAudio.pause(); previewAudio = null; }
+        previewBuffer = null;
+        previewPlaying = false;
+        prevPlay.textContent = '▶';
+        prevPlay.style.background = 'var(--accent)';
+        preview.classList.remove('show');
+        recordedDataURL = null;
+        recordedBlob = null;
+      });
+
+sendBtn.addEventListener('click', async () => {
+  if (!recordedBlob) return;
+
+  sendBtn.disabled = true;
+  sendBtn.textContent = '📤 Uploading…';
+
+  try {
+    const storage = firebase.storage();
+    const fileName = `voicenotes/${ROOM_ID}/${Date.now()}.webm`;
+    const storageRef = storage.ref(fileName);
+
+    await storageRef.put(recordedBlob, {
+      contentType: recordedBlob.type || 'audio/webm'
+    });
+
+    const downloadURL = await storageRef.getDownloadURL();
+    const dur = previewBuffer ? previewBuffer.duration : 0;
+
+  const ref = db.ref(`rooms/${ROOM_ID}/voicenotes`).push({
+      url: downloadURL,
+      duration: dur,
+      time: Date.now(),
+      uid: CURRENT_UID || null
+    });
+    renderVNCard(ref.key, {
+      url: downloadURL,
+      blobURL: URL.createObjectURL(recordedBlob),
+      duration: dur,
+      time: Date.now()
+    }, true);
+
+  } catch (err) {
+    console.error('Upload failed:', err);
+    hint.textContent = 'Upload failed — try again';
+    hint.classList.add('active');
+    setTimeout(() => { hint.textContent = 'Hold to record'; hint.classList.remove('active'); }, 3000);
+  }
+
+  if (previewAudio) { previewAudio.pause(); previewAudio = null; }
+  previewBuffer = null;
+  previewPlaying = false;
+  prevPlay.textContent = '▶';
+  prevPlay.style.background = 'var(--accent)';
+  preview.classList.remove('show');
+  recordedDataURL = null;
+  recordedBlob = null;
+  sendBtn.disabled = false;
+  sendBtn.textContent = '📌 Pin it';
+});
+
+      /* ---- Load from Firebase in real time ---- */
+      db.ref(`rooms/${ROOM_ID}/voicenotes`).on('value', snap => {
+        const data = snap.val();
+        if (!data) { board.innerHTML = ''; return; }
+        const entries = Object.entries(data).sort((a, b) => (b[1].time || 0) - (a[1].time || 0));
+        const keys = new Set(entries.map(([k]) => k));
+        [...board.querySelectorAll('.vnCard')].forEach(card => {
+          const id = card.querySelector('.vnCardCanvas')?.id?.replace('vnc-', '');
+          if (id && !keys.has(id)) card.remove();
+        });
+        for (const [key, n] of entries) {
+          if (!document.getElementById('vnc-' + key)) {
+            renderVNCard(key, n, false);
+          }
+        }
+      });
+
+      /* ---- Hold events ---- */
+      holdBtn.addEventListener('mousedown',   onHoldStart, { passive: false });
+      holdBtn.addEventListener('touchstart',  onHoldStart, { passive: false });
+      holdBtn.addEventListener('mouseup',     onHoldEnd,   { passive: false });
+      holdBtn.addEventListener('mouseleave',  onHoldEnd,   { passive: false });
+      holdBtn.addEventListener('touchend',    onHoldEnd,   { passive: false });
+      holdBtn.addEventListener('touchcancel', onHoldEnd,   { passive: false });
+
+      /* ---- Render pinned card ---- */
+      function renderVNCard(key, n, skipIfExists) {
+        if (skipIfExists && document.getElementById('vnc-' + key)) return;
+        const card = document.createElement('div');
+        card.className = 'vnCard';
+        card.style.setProperty('--r', (Math.random() * 0.8 - 0.4).toFixed(2));
+        const dateStr = new Date(n.time || Date.now()).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' });
+        const canvasId = 'vnc-' + key;
+        card.innerHTML = `
+          <span class="pin" aria-hidden="true"></span>
+          <div class="vnCardWaveWrap">
+            <button class="vnCardPlayBtn">▶</button>
+            <canvas class="vnCardCanvas" id="${canvasId}" width="180" height="36"></canvas>
+            <span class="vnCardTime" id="vnt-${key}">${fmtSec(n.duration || 0)}</span>
+          </div>
+          <div class="vnCardFooter">
+            <small>Added on ${dateStr}</small>
+          </div>`;
+        board.insertBefore(card, board.firstChild);
+
+        const canvas  = document.getElementById(canvasId);
+        const timeEl  = document.getElementById('vnt-' + key);
+        const playBtn = card.querySelector('.vnCardPlayBtn');
+        let cardAudio = null, cardBuffer = null, cardPlaying = false;
+
+        drawFlatWave(canvas);
+
+        // Decode waveform
+        decodeAudio(n.blobURL || n.url || n.dataURL).then(audioBuf => {
+          cardBuffer = audioBuf;
+          drawStaticWave(canvas, audioBuf, 0);
+          timeEl.textContent = fmtSec(audioBuf.duration);
+        }).catch(() => {});
+
+        // Seek
+        canvas.addEventListener('click', e => {
+          if (!cardAudio || !cardAudio.duration) return;
+          const r = canvas.getBoundingClientRect();
+          cardAudio.currentTime = ((e.clientX - r.left) / r.width) * cardAudio.duration;
+        });
+
+        // Play/pause
+        playBtn.addEventListener('click', () => {
+          if (!cardAudio) {
+            cardAudio = new Audio();
+            cardAudio.preload = 'auto';
+            cardAudio.src = n.blobURL || n.url || n.dataURL;
+            cardAudio.ontimeupdate = () => {
+              if (!cardBuffer) return;
+              drawStaticWave(canvas, cardBuffer, cardAudio.currentTime / (cardAudio.duration || 1));
+              timeEl.textContent = fmtSec(cardAudio.currentTime);
+            };
+            cardAudio.onended = () => {
+              cardPlaying = false;
+              playBtn.textContent = '▶';
+              playBtn.style.background = 'var(--accent)';
+              if (cardBuffer) drawStaticWave(canvas, cardBuffer, 0);
+              timeEl.textContent = fmtSec(cardBuffer ? cardBuffer.duration : 0);
+            };
+          }
+          if (cardPlaying) {
+            cardAudio.pause();
+            cardPlaying = false;
+            playBtn.textContent = '▶';
+            playBtn.style.background = 'var(--accent)';
+          } else {
+            cardAudio.play().catch(err => console.warn('Card play failed:', err));
+            cardPlaying = true;
+            playBtn.textContent = '❚❚';
+            playBtn.style.background = '#e8004e';
+          }
+        });
+      }
+    }
+
+    function fmtSec(t) {
+      if (!isFinite(t) || t < 0) return '0:00';
+      const m = Math.floor(t / 60);
+      const s = Math.floor(t % 60);
+      return `${m}:${s.toString().padStart(2, '0')}`;
+    }
 
   </script>
 
