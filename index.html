@@ -3769,22 +3769,7 @@ sendBtn.addEventListener('click', async () => {
   sendBtn.textContent = '📌 Pin it';
 });
 
-      /* ---- Load from Firebase in real time ---- */
-      db.ref(`rooms/${ROOM_ID}/voicenotes`).on('value', snap => {
-        const data = snap.val();
-        if (!data) { board.innerHTML = ''; return; }
-        const entries = Object.entries(data).sort((a, b) => (b[1].time || 0) - (a[1].time || 0));
-        const keys = new Set(entries.map(([k]) => k));
-        [...board.querySelectorAll('.vnCard')].forEach(card => {
-          const id = card.querySelector('.vnCardCanvas')?.id?.replace('vnc-', '');
-          if (id && !keys.has(id)) card.remove();
-        });
-        for (const [key, n] of entries) {
-          if (!document.getElementById('vnc-' + key)) {
-            renderVNCard(key, n, false);
-          }
-        }
-      });
+
 
       /* ---- Hold events ---- */
       holdBtn.addEventListener('mousedown',   onHoldStart, { passive: false });
@@ -3866,7 +3851,25 @@ sendBtn.addEventListener('click', async () => {
             playBtn.style.background = '#e8004e';
           }
         });
-      }
+     }
+
+      /* ---- Load from Firebase in real time ---- */
+      db.ref(`rooms/${ROOM_ID}/voicenotes`).on('value', snap => {
+        const data = snap.val();
+        if (!data) { board.innerHTML = ''; return; }
+        const entries = Object.entries(data).sort((a, b) => (b[1].time || 0) - (a[1].time || 0));
+        const keys = new Set(entries.map(([k]) => k));
+        [...board.querySelectorAll('.vnCard')].forEach(card => {
+          const id = card.querySelector('.vnCardCanvas')?.id?.replace('vnc-', '');
+          if (id && !keys.has(id)) card.remove();
+        });
+        for (const [key, n] of entries) {
+          if (!document.getElementById('vnc-' + key)) {
+            renderVNCard(key, n, false);
+          }
+        }
+      });
+
     }
 
     function fmtSec(t) {
@@ -3875,6 +3878,8 @@ sendBtn.addEventListener('click', async () => {
       const s = Math.floor(t % 60);
       return `${m}:${s.toString().padStart(2, '0')}`;
     }
+
+
 
   </script>
 
