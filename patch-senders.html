@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Patch VN Senders</title>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+  <style>
+    body { font-family: sans-serif; max-width: 520px; margin: 60px auto; padding: 0 20px; }
+    #log { margin-top: 24px; font-size: 13px; line-height: 1.8; }
+    .ok  { color: #27ae60; }
+    .err { color: #e74c3c; }
+    button { padding: 12px 24px; background: #ff6fa6; color: #fff; border: none;
+             border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; }
+    button:disabled { opacity: .5; cursor: default; }
+  </style>
+</head>
+<body>
+  <h2>🔧 Patch voice note senders</h2>
+  <p>Open this file in your browser while connected to the internet. Click the button once — it will write the correct <code>sender</code> field for all 14 old voice notes.</p>
+  <button id="runBtn">Run patch</button>
+  <div id="log"></div>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyD7Rt9RFyk6DHsaqB_2KIv0QBGPGXYrWPo",
+      authDomain: "notes-8d314.firebaseapp.com",
+      databaseURL: "https://notes-8d314-default-rtdb.firebaseio.com",
+      projectId: "notes-8d314",
+      storageBucket: "notes-8d314.firebasestorage.app",
+      messagingSenderId: "46616929171",
+      appId: "1:46616929171:web:c3981641b271d3e33b3e66"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    firebase.auth().signInAnonymously();
+
+    const db = firebase.database();
+    const ROOM = 'for-khadeja';
+
+    const patches = [
+      { key: '-OnxrX0WuGGajPXzlB2Z', sender: 'Saleh'   },
+      { key: '-Oov71VFhFNTroHyG45z', sender: 'Khadeja'  },
+      { key: '-Op-TP4l4fOD5QPWhxKw', sender: 'Saleh'   },
+      { key: '-Op-TVpF7hdPvuwMr5rZ', sender: 'Saleh'   },
+      { key: '-OqDKHYhDxXVSkCfb9V9', sender: 'Khadeja'  },
+      { key: '-OqDKj49JZH-bMRLaoCY', sender: 'Khadeja'  },
+      { key: '-OqDKnl7rLdxFO7az26d', sender: 'Khadeja'  },
+      { key: '-OqGHxb7QeFrb-rqMLxJ', sender: 'Saleh'   },
+      { key: '-OqGIT9bQDt5h607JGJS', sender: 'Saleh'   },
+      { key: '-OqGJWSkpAsV-jHPmsqD', sender: 'Saleh'   },
+      { key: '-OqJ0jNOiAxRZT2gz27Q', sender: 'Khadeja'  },
+      { key: '-OqJ1DKoQz6qYrgQd1Uc', sender: 'Khadeja'  },
+      { key: '-OqJ2B90vhWV2whHoOOM', sender: 'Khadeja'  },
+      { key: '-OqJ2L0_-HQCEjuVSUl1', sender: 'Khadeja'  },
+    ];
+
+    const log = document.getElementById('log');
+    const btn = document.getElementById('runBtn');
+
+    function line(msg, cls) {
+      const d = document.createElement('div');
+      d.className = cls || '';
+      d.textContent = msg;
+      log.appendChild(d);
+    }
+
+    btn.addEventListener('click', async () => {
+      btn.disabled = true;
+      log.innerHTML = '';
+      line('Starting patch…');
+
+      let ok = 0, fail = 0;
+      for (const { key, sender } of patches) {
+        try {
+          await db.ref(`rooms/${ROOM}/voicenotes/${key}/sender`).set(sender);
+          line(`✓ ${key}  →  ${sender}`, 'ok');
+          ok++;
+        } catch (err) {
+          line(`✗ ${key}  →  FAILED: ${err.message}`, 'err');
+          fail++;
+        }
+      }
+
+      line('');
+      line(`Done — ${ok} patched, ${fail} failed.`, ok === patches.length ? 'ok' : 'err');
+      if (ok === patches.length) {
+        line('You can close this tab now. 💞');
+      }
+    });
+  </script>
+</body>
+</html>

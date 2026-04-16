@@ -2057,13 +2057,49 @@
   padding-top: 8px;
   border-top: 1px dashed #e0cbd3;
   display: flex;
-  justify-content: flex-start;
+  justify-content: space-between;
   align-items: center;
+  gap: 6px;
 }
 .vnCardFooter small {
   display: block;
   color: #8b6b73;
   font-size: 12px;
+}
+/* Sender badges — used on both notes and voice note cards */
+.senderBadge {
+  font-size: 11px;
+  font-weight: 800;
+  padding: 2px 9px;
+  border-radius: 999px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  letter-spacing: 0.02em;
+}
+.senderBadge.Saleh {
+  background: #e8f4ff;
+  color: #2471a3;
+  border: 1px solid #aed6f1;
+}
+.senderBadge.Khadeja {
+  background: #fff0f6;
+  color: #c0392b;
+  border: 1px solid #f1948a;
+}
+.senderBadge.unknown {
+  background: #f5f5f5;
+  color: #aaa;
+  border: 1px solid #ddd;
+}
+/* Note card footer needs same flex layout as VN footer */
+.noteFooter {
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px dashed #e0cbd3;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 6px;
 }
 .vnNotesBoard {
   display: grid;
@@ -2361,7 +2397,12 @@ const flowerPhotos = [
     /* JAR PREVIEW SWITCH – set to false when you no longer want early preview */
     const JAR_PREVIEW = false;
 
-    const SECRET = 'saleh';
+    /* Two separate codes — one per person */
+    const CODES = { 'saleh': 'Khadeja', 'khadeja': 'Saleh' };
+    const IDENTITY_KEY = 'lovesite_identity_v1';
+    /* Load saved identity (so they don't have to re-enter on every visit) */
+    let CURRENT_USER = localStorage.getItem(IDENTITY_KEY) || null; // 'Saleh' | 'Khadeja' | null
+
     const gateWrap = document.getElementById('gateWrap');
     const appShell = document.getElementById('appShell');
     const cuteFooter = document.getElementById('cuteFooter');
@@ -2560,7 +2601,8 @@ const flowerPhotos = [
         const v = input.value.trim();
         if (!v) return;
         db.ref(`rooms/${ROOM_ID}/notes`).push({
-          type: 'text', text: v, time: Date.now(), uid: CURRENT_UID || null
+          type: 'text', text: v, time: Date.now(), uid: CURRENT_UID || null,
+          sender: CURRENT_USER || null
         });
         input.value = '';
       });
@@ -2575,10 +2617,16 @@ const flowerPhotos = [
           card.className = 'noteCard';
           card.style.setProperty('--r', (Math.random() * 0.8 - 0.4).toFixed(2));
           const dateStr = new Date(n.time || Date.now()).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' });
+          const senderName = n.sender || null;
+          const badgeCls = senderName ? senderName : 'unknown';
+          const badgeLabel = senderName ? (senderName === 'Saleh' ? 'Saleh' : 'Khadeja🌸') : '❓ Unknown';
           card.innerHTML = `
             <span class="pin" aria-hidden="true"></span>
             <div class="noteBody"><p>${escapeHtml(n.text || '')}</p></div>
-            <div class="noteFooter"><small>Added on ${dateStr}</small></div>`;
+            <div class="noteFooter">
+              <small>Added on ${dateStr}</small>
+              <span class="senderBadge ${badgeCls}">${badgeLabel}</span>
+            </div>`;
           notesBoard.appendChild(card);
         }
       });
@@ -3420,32 +3468,22 @@ function openPage(p){
     }
 
     function unlock() {
-      const val = document.getElementById('codeField').value.trim();
-      if (val === SECRET) {
+      const val = document.getElementById('codeField').value.trim().toLowerCase();
+      const matchedName = CODES[val];
+      if (matchedName) {
+        /* Set and persist identity */
+        CURRENT_USER = matchedName;
+        try { localStorage.setItem(IDENTITY_KEY, CURRENT_USER); } catch(e) {}
 
         try {
           LOGS_REF.push({
             time: Date.now(),
             iso: new Date().toISOString(),
+            user: CURRENT_USER,
             tz: Intl.DateTimeFormat().resolvedOptions().timeZone || null,
             ua: navigator.userAgent || null
           });
-        } catch (e) {
-          console.error('LOG PUSH FAILED', e);
-              async function logUnlockEvent(){
-  try{
-    LOGS_REF.push({
-      uid: CURRENT_UID || null,
-      time: Date.now(),
-      iso: new Date().toISOString(),
-      tz: Intl.DateTimeFormat().resolvedOptions().timeZone,
-      ua: navigator.userAgent
-    });
-  }catch(e){
-    console.warn("Log failed", e);
-  }
-}
-        }
+        } catch (e) { console.error('LOG PUSH FAILED', e); }
 
         showApp();
         logUnlockEvent();
@@ -3498,7 +3536,15 @@ function openPage(p){
       /* ---- Get mic (cached after first grant) ---- */
       async function ensureMic() {
         if (micStream && micStream.active) return micStream;
-        micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        micStream = await navigator.mediaDevices.getUserMedia({
+          audio: {
+            echoCancellation: true,
+            noiseSuppression: true,
+            autoGainControl: true,
+            sampleRate: 48000,
+            channelCount: 1
+          }
+        });
         return micStream;
       }
 
@@ -3593,11 +3639,12 @@ function openPage(p){
           sourceNode = liveAudioCtx.createMediaStreamSource(stream);
           sourceNode.connect(analyser);
 
-          // Pick best supported format for this device
+          // Pick best supported format for this device, with high bitrate
           const mimeType = ['audio/webm;codecs=opus','audio/webm','audio/ogg;codecs=opus','audio/mp4','audio/aac','']
             .find(m => m === '' || MediaRecorder.isTypeSupported(m)) || '';
 
-          mediaRec = new MediaRecorder(stream, mimeType ? { mimeType } : {});
+          const recOptions = mimeType ? { mimeType, audioBitsPerSecond: 128000 } : { audioBitsPerSecond: 128000 };
+          mediaRec = new MediaRecorder(stream, recOptions);
           audioChunks = [];
           mediaRec.ondataavailable = ev => { if (ev.data && ev.data.size > 0) audioChunks.push(ev.data); };
           mediaRec.onstop = onRecStop;
@@ -3727,8 +3774,30 @@ sendBtn.addEventListener('click', async () => {
   sendBtn.textContent = '📤 Uploading…';
 
   try {
+    /* 1. Extract peaks from the blob NOW (while we still have it locally),
+          so the other person never needs to decode from the Storage URL */
+    let storedPeaks = null;
+    if (previewBuffer) {
+      const data = previewBuffer.getChannelData(0);
+      const NUM_PEAKS = 180; // matches canvas width
+      const step = Math.max(1, Math.ceil(data.length / NUM_PEAKS));
+      const peaks = [];
+      for (let x = 0; x < NUM_PEAKS; x++) {
+        let max = 0;
+        for (let j = 0; j < step; j++) {
+          const abs = Math.abs(data[x * step + j] || 0);
+          if (abs > max) max = abs;
+        }
+        peaks.push(parseFloat(max.toFixed(4)));
+      }
+      storedPeaks = peaks;
+    }
+
+    /* 2. Upload audio to Firebase Storage */
     const storage = firebase.storage();
-    const fileName = `voicenotes/${ROOM_ID}/${Date.now()}.webm`;
+    const ext = (recordedBlob.type || '').includes('mp4') ? 'mp4'
+              : (recordedBlob.type || '').includes('ogg') ? 'ogg' : 'webm';
+    const fileName = `voicenotes/${ROOM_ID}/${Date.now()}.${ext}`;
     const storageRef = storage.ref(fileName);
 
     await storageRef.put(recordedBlob, {
@@ -3738,18 +3807,37 @@ sendBtn.addEventListener('click', async () => {
     const downloadURL = await storageRef.getDownloadURL();
     const dur = previewBuffer ? previewBuffer.duration : 0;
 
-  const ref = db.ref(`rooms/${ROOM_ID}/voicenotes`).push({
+    /* 3. Write metadata (+ peaks + sender) to Realtime DB */
+    const payload = {
       url: downloadURL,
       duration: dur,
       time: Date.now(),
-      uid: CURRENT_UID || null
-    });
+      uid: CURRENT_UID || null,
+      sender: CURRENT_USER || null
+    };
+    if (storedPeaks) payload.peaks = storedPeaks;
+
+    const ref = db.ref(`rooms/${ROOM_ID}/voicenotes`).push(payload);
+
+    /* 4. Render locally using blob URL (instant, no CORS needed) */
     renderVNCard(ref.key, {
       url: downloadURL,
       blobURL: URL.createObjectURL(recordedBlob),
+      peaks: storedPeaks,
       duration: dur,
-      time: Date.now()
+      time: Date.now(),
+      sender: CURRENT_USER || null
     }, true);
+
+    /* 5. Clean up only on success */
+    if (previewAudio) { previewAudio.pause(); previewAudio = null; }
+    previewBuffer = null;
+    previewPlaying = false;
+    prevPlay.textContent = '▶';
+    prevPlay.style.background = 'var(--accent)';
+    preview.classList.remove('show');
+    recordedDataURL = null;
+    recordedBlob = null;
 
   } catch (err) {
     console.error('Upload failed:', err);
@@ -3758,14 +3846,6 @@ sendBtn.addEventListener('click', async () => {
     setTimeout(() => { hint.textContent = 'Hold to record'; hint.classList.remove('active'); }, 3000);
   }
 
-  if (previewAudio) { previewAudio.pause(); previewAudio = null; }
-  previewBuffer = null;
-  previewPlaying = false;
-  prevPlay.textContent = '▶';
-  prevPlay.style.background = 'var(--accent)';
-  preview.classList.remove('show');
-  recordedDataURL = null;
-  recordedBlob = null;
   sendBtn.disabled = false;
   sendBtn.textContent = '📌 Pin it';
 });
@@ -3788,6 +3868,9 @@ sendBtn.addEventListener('click', async () => {
         card.style.setProperty('--r', (Math.random() * 0.8 - 0.4).toFixed(2));
         const dateStr = new Date(n.time || Date.now()).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' });
         const canvasId = 'vnc-' + key;
+        const senderName = n.sender || null;
+        const badgeCls = senderName ? senderName : 'unknown';
+        const badgeLabel = senderName ? (senderName === 'Saleh' ? 'Saleh' : 'Khadeja🌸 ') : '❓ Unknown';
         card.innerHTML = `
           <span class="pin" aria-hidden="true"></span>
           <div class="vnCardWaveWrap">
@@ -3797,47 +3880,83 @@ sendBtn.addEventListener('click', async () => {
           </div>
           <div class="vnCardFooter">
             <small>Added on ${dateStr}</small>
+            <span class="senderBadge ${badgeCls}">${badgeLabel}</span>
           </div>`;
         board.insertBefore(card, board.firstChild);
 
         const canvas  = document.getElementById(canvasId);
         const timeEl  = document.getElementById('vnt-' + key);
         const playBtn = card.querySelector('.vnCardPlayBtn');
-        let cardAudio = null, cardBuffer = null, cardPlaying = false;
+        let cardAudio = null, cardPlaying = false;
 
-        drawFlatWave(canvas);
+        /* ---- Waveform: use stored peaks if available, else try decode ---- */
+        // Draw from peaks array (works for both sender and receiver, no CORS)
+        function drawFromPeaks(peaks, progress) {
+          const ctx = canvas.getContext('2d');
+          const W = canvas.width, H = canvas.height;
+          ctx.clearRect(0, 0, W, H);
+          const mid = H / 2;
+          const cutoff = Math.floor(W * Math.min(Math.max(progress || 0), 1));
+          for (let x = 0; x < W; x++) {
+            const peakVal = peaks[Math.floor(x * peaks.length / W)] || 0;
+            const h = Math.max(2, peakVal * (H * 0.85));
+            ctx.fillStyle = x < cutoff ? '#ff6fa6' : 'rgba(255,111,166,0.22)';
+            ctx.fillRect(x, mid - h / 2, 1, h);
+          }
+        }
 
-        // Decode waveform
-        decodeAudio(n.blobURL || n.url || n.dataURL).then(audioBuf => {
-          cardBuffer = audioBuf;
-          drawStaticWave(canvas, audioBuf, 0);
-          timeEl.textContent = fmtSec(audioBuf.duration);
-        }).catch(() => {});
+        // Store peaks for seek animation
+        let activePeaks = null;
 
-        // Seek
+        if (n.peaks && n.peaks.length) {
+          // Best case: peaks stored in DB — instant, no decode
+          activePeaks = n.peaks;
+          drawFromPeaks(activePeaks, 0);
+        } else if (n.blobURL) {
+          // Sender's own session: can decode from local blob
+          decodeAudio(n.blobURL).then(buf => {
+            const data = buf.getChannelData(0);
+            const NUM_PEAKS = 180;
+            const step = Math.max(1, Math.ceil(data.length / NUM_PEAKS));
+            const peaks = [];
+            for (let x = 0; x < NUM_PEAKS; x++) {
+              let max = 0;
+              for (let j = 0; j < step; j++) { const a = Math.abs(data[x*step+j]||0); if(a>max) max=a; }
+              peaks.push(max);
+            }
+            activePeaks = peaks;
+            drawFromPeaks(activePeaks, 0);
+            timeEl.textContent = fmtSec(buf.duration);
+          }).catch(() => drawFlatWave(canvas));
+        } else {
+          drawFlatWave(canvas);
+        }
+
+        // Seek on canvas click
         canvas.addEventListener('click', e => {
           if (!cardAudio || !cardAudio.duration) return;
           const r = canvas.getBoundingClientRect();
           cardAudio.currentTime = ((e.clientX - r.left) / r.width) * cardAudio.duration;
         });
 
-        // Play/pause
+        // Play/pause — uses Web Audio API with clarity filter for better sound
+        let cardAudioCtx = null, cardSourceNode = null;
         playBtn.addEventListener('click', () => {
           if (!cardAudio) {
             cardAudio = new Audio();
             cardAudio.preload = 'auto';
-            cardAudio.src = n.blobURL || n.url || n.dataURL;
+            cardAudio.crossOrigin = 'anonymous';
+            cardAudio.src = n.blobURL || n.url;
             cardAudio.ontimeupdate = () => {
-              if (!cardBuffer) return;
-              drawStaticWave(canvas, cardBuffer, cardAudio.currentTime / (cardAudio.duration || 1));
+              if (activePeaks) drawFromPeaks(activePeaks, cardAudio.currentTime / (cardAudio.duration || 1));
               timeEl.textContent = fmtSec(cardAudio.currentTime);
             };
             cardAudio.onended = () => {
               cardPlaying = false;
               playBtn.textContent = '▶';
               playBtn.style.background = 'var(--accent)';
-              if (cardBuffer) drawStaticWave(canvas, cardBuffer, 0);
-              timeEl.textContent = fmtSec(cardBuffer ? cardBuffer.duration : 0);
+              if (activePeaks) drawFromPeaks(activePeaks, 0);
+              timeEl.textContent = fmtSec(n.duration || 0);
             };
           }
           if (cardPlaying) {
@@ -3846,13 +3965,41 @@ sendBtn.addEventListener('click', async () => {
             playBtn.textContent = '▶';
             playBtn.style.background = 'var(--accent)';
           } else {
+            // Set up Web Audio clarity chain on first play
+            if (!cardAudioCtx) {
+              try {
+                cardAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const src = cardAudioCtx.createMediaElementSource(cardAudio);
+                // High-pass filter: cuts low-frequency rumble / muffled underwater sound
+                const hpf = cardAudioCtx.createBiquadFilter();
+                hpf.type = 'highpass';
+                hpf.frequency.value = 120; // cut below 120Hz
+                hpf.Q.value = 0.7;
+                // Presence boost: lifts 2–5kHz speech clarity band
+                const presence = cardAudioCtx.createBiquadFilter();
+                presence.type = 'peaking';
+                presence.frequency.value = 3000;
+                presence.gain.value = 3.5; // +3.5dB presence
+                presence.Q.value = 1.2;
+                src.connect(hpf);
+                hpf.connect(presence);
+                presence.connect(cardAudioCtx.destination);
+              } catch(err) {
+                // If Web Audio setup fails, fall back to plain playback
+                console.warn('Web Audio setup failed, using plain playback:', err);
+                cardAudioCtx = null;
+              }
+            }
+            if (cardAudioCtx && cardAudioCtx.state === 'suspended') {
+              cardAudioCtx.resume();
+            }
             cardAudio.play().catch(err => console.warn('Card play failed:', err));
             cardPlaying = true;
             playBtn.textContent = '❚❚';
             playBtn.style.background = '#e8004e';
           }
         });
-     }
+      }
 
 }
 
@@ -3863,15 +4010,9 @@ sendBtn.addEventListener('click', async () => {
         const data = snap.val();
         if (!data) { board.innerHTML = ''; return; }
         const entries = Object.entries(data).sort((a, b) => (b[1].time || 0) - (a[1].time || 0));
-        const keys = new Set(entries.map(([k]) => k));
-        [...board.querySelectorAll('.vnCard')].forEach(card => {
-          const id = card.querySelector('.vnCardCanvas')?.id?.replace('vnc-', '');
-          if (id && !keys.has(id)) card.remove();
-        });
+        board.innerHTML = '';
         for (const [key, n] of entries) {
-          if (!document.getElementById('vnc-' + key)) {
-            renderVNCard(key, n, false);
-          }
+          renderVNCard(key, n, false);
         }
       });
     }
