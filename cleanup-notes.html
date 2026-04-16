@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Cleanup Bad Notes</title>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+  <style>
+    body { font-family: sans-serif; max-width: 560px; margin: 60px auto; padding: 0 20px; }
+    #log { margin-top: 24px; font-size: 13px; line-height: 1.8; max-height: 400px; overflow-y: auto; }
+    .ok  { color: #27ae60; }
+    .err { color: #e74c3c; }
+    .inf { color: #888; }
+    button { padding: 12px 24px; background: #ff6fa6; color: #fff; border: none;
+             border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; }
+    button:disabled { opacity: .5; cursor: default; }
+  </style>
+</head>
+<body>
+  <h2>🧹 Cleanup blank notes</h2>
+  <p>This will scan all notes and <strong>delete any entry that has no text</strong> (the blank ones created by the bad patch). Real notes with text will not be touched.</p>
+  <button id="runBtn">Run cleanup</button>
+  <div id="log"></div>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyD7Rt9RFyk6DHsaqB_2KIv0QBGPGXYrWPo",
+      authDomain: "notes-8d314.firebaseapp.com",
+      databaseURL: "https://notes-8d314-default-rtdb.firebaseio.com",
+      projectId: "notes-8d314",
+      storageBucket: "notes-8d314.firebasestorage.app",
+      messagingSenderId: "46616929171",
+      appId: "1:46616929171:web:c3981641b271d3e33b3e66"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    firebase.auth().signInAnonymously();
+
+    const db = firebase.database();
+    const ROOM = 'for-khadeja';
+
+    const log = document.getElementById('log');
+    const btn = document.getElementById('runBtn');
+
+    function line(msg, cls) {
+      const d = document.createElement('div');
+      d.className = cls || '';
+      d.textContent = msg;
+      log.appendChild(d);
+    }
+
+    btn.addEventListener('click', async () => {
+      btn.disabled = true;
+      log.innerHTML = '';
+      line('Reading all notes…', 'inf');
+
+      const snap = await db.ref(`rooms/${ROOM}/notes`).get();
+      const data = snap.val();
+      if (!data) { line('No notes found.', 'inf'); return; }
+
+      const entries = Object.entries(data);
+      line(`Found ${entries.length} total entries. Scanning for blank ones…`, 'inf');
+
+      let deleted = 0, kept = 0;
+      for (const [key, val] of entries) {
+        const hasText = val && val.text && val.text.trim().length > 0;
+        if (!hasText) {
+          try {
+            await db.ref(`rooms/${ROOM}/notes/${key}`).remove();
+            line(`🗑 Deleted blank entry: ${key}`, 'ok');
+            deleted++;
+          } catch(err) {
+            line(`✗ Failed to delete ${key}: ${err.message}`, 'err');
+          }
+        } else {
+          kept++;
+        }
+      }
+
+      line('');
+      line(`Done — ${deleted} blank entries deleted, ${kept} real notes kept.`, 'ok');
+      line('You can close this tab now. 💞');
+    });
+  </script>
+</body>
+</html>
