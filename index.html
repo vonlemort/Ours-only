@@ -3935,20 +3935,16 @@ sendBtn.addEventListener('click', async () => {
           // Best case: peaks already in DB — instant
           activePeaks = n.peaks;
           drawFromPeaks(activePeaks, 0);
-        } else {
-          // Decode from blob (sender's session) or fetch from Storage URL (receiver)
-          const src = n.blobURL || n.url;
-          decodeFromURL(src).then(buf => {
+        } else if (n.blobURL) {
+          // Sender just recorded — decode from local blob (no CORS issue)
+          decodeFromURL(n.blobURL).then(buf => {
             activePeaks = extractPeaks(buf);
             drawFromPeaks(activePeaks, 0);
             timeEl.textContent = fmtSec(buf.duration);
-            // Save peaks back to Firebase so next load is instant
-            if (n.url && !n.peaks) {
-              try {
-                db.ref('rooms/' + ROOM_ID + '/voicenotes/' + key + '/peaks').set(activePeaks);
-              } catch(e) {}
-            }
           }).catch(() => drawFlatWave(canvas));
+        } else {
+          // Old note with no peaks — will extract after play starts (see below)
+          drawFlatWave(canvas);
         }
 
         // Seek on canvas click
@@ -3967,6 +3963,24 @@ sendBtn.addEventListener('click', async () => {
             cardAudio.ontimeupdate = () => {
               if (activePeaks) drawFromPeaks(activePeaks, cardAudio.currentTime / (cardAudio.duration || 1));
               timeEl.textContent = fmtSec(cardAudio.currentTime);
+            };
+            // Once audio loads, extract peaks from it and save to Firebase
+            cardAudio.oncanplaythrough = () => {
+              if (!activePeaks && !n.peaks && n.url) {
+                // Use Web Audio to decode the already-loaded audio element
+                try {
+                  const actx = new (window.AudioContext || window.webkitAudioContext)();
+                  fetch(n.url)
+                    .then(r => r.arrayBuffer())
+                    .then(buf => actx.decodeAudioData(buf))
+                    .then(audioBuf => {
+                      activePeaks = extractPeaks(audioBuf);
+                      drawFromPeaks(activePeaks, cardAudio.currentTime / (cardAudio.duration || 1));
+                      // Save to Firebase so it never needs decoding again
+                      db.ref('rooms/' + ROOM_ID + '/voicenotes/' + key + '/peaks').set(activePeaks).catch(() => {});
+                    }).catch(() => {});
+                } catch(e) {}
+              }
             };
             cardAudio.onended = () => {
               cardPlaying = false;
