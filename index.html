@@ -2619,7 +2619,7 @@ const flowerPhotos = [
           const dateStr = new Date(n.time || Date.now()).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' });
           const senderName = n.sender || null;
           const badgeCls = senderName ? senderName : 'unknown';
-          const badgeLabel = senderName ? (senderName === 'Saleh' ? 'Saleh' : 'Khadeja🌸 ') : '❓ Unknown';
+          const badgeLabel = senderName ? (senderName === 'Saleh' ? '💙 Saleh' : '🌸 Khadeja') : '❓ Unknown';
           card.innerHTML = `
             <span class="pin" aria-hidden="true"></span>
             <div class="noteBody"><p>${escapeHtml(n.text || '')}</p></div>
@@ -3870,7 +3870,7 @@ sendBtn.addEventListener('click', async () => {
         const canvasId = 'vnc-' + key;
         const senderName = n.sender || null;
         const badgeCls = senderName ? senderName : 'unknown';
-        const badgeLabel = senderName ? (senderName === 'Saleh' ? 'Saleh' : 'Khadeja🌸') : '❓ Unknown';
+        const badgeLabel = senderName ? (senderName === 'Saleh' ? '💙 Saleh' : '🌸 Khadeja') : '❓ Unknown';
         card.innerHTML = `
           <span class="pin" aria-hidden="true"></span>
           <div class="vnCardWaveWrap">
@@ -3908,28 +3908,47 @@ sendBtn.addEventListener('click', async () => {
         // Store peaks for seek animation
         let activePeaks = null;
 
+        function extractPeaks(audioBuffer) {
+          const data = audioBuffer.getChannelData(0);
+          const NUM_PEAKS = 180;
+          const step = Math.max(1, Math.ceil(data.length / NUM_PEAKS));
+          const peaks = [];
+          for (let x = 0; x < NUM_PEAKS; x++) {
+            let max = 0;
+            for (let j = 0; j < step; j++) { const a = Math.abs(data[x*step+j]||0); if(a>max) max=a; }
+            peaks.push(parseFloat(max.toFixed(4)));
+          }
+          return peaks;
+        }
+
+        // Fetch audio as blob then decode — works around CORS on Storage URLs
+        function decodeFromURL(url) {
+          return fetch(url)
+            .then(r => r.arrayBuffer())
+            .then(buf => {
+              const actx = new (window.AudioContext || window.webkitAudioContext)();
+              return new Promise((res, rej) => actx.decodeAudioData(buf, res, rej));
+            });
+        }
+
         if (n.peaks && n.peaks.length) {
-          // Best case: peaks stored in DB — instant, no decode
+          // Best case: peaks already in DB — instant
           activePeaks = n.peaks;
           drawFromPeaks(activePeaks, 0);
-        } else if (n.blobURL) {
-          // Sender's own session: can decode from local blob
-          decodeAudio(n.blobURL).then(buf => {
-            const data = buf.getChannelData(0);
-            const NUM_PEAKS = 180;
-            const step = Math.max(1, Math.ceil(data.length / NUM_PEAKS));
-            const peaks = [];
-            for (let x = 0; x < NUM_PEAKS; x++) {
-              let max = 0;
-              for (let j = 0; j < step; j++) { const a = Math.abs(data[x*step+j]||0); if(a>max) max=a; }
-              peaks.push(max);
-            }
-            activePeaks = peaks;
+        } else {
+          // Decode from blob (sender's session) or fetch from Storage URL (receiver)
+          const src = n.blobURL || n.url;
+          decodeFromURL(src).then(buf => {
+            activePeaks = extractPeaks(buf);
             drawFromPeaks(activePeaks, 0);
             timeEl.textContent = fmtSec(buf.duration);
+            // Save peaks back to Firebase so next load is instant
+            if (n.url && !n.peaks) {
+              try {
+                db.ref('rooms/' + ROOM_ID + '/voicenotes/' + key + '/peaks').set(activePeaks);
+              } catch(e) {}
+            }
           }).catch(() => drawFlatWave(canvas));
-        } else {
-          drawFlatWave(canvas);
         }
 
         // Seek on canvas click
