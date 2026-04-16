@@ -72,6 +72,19 @@
       "but we agreed that we will stop talking if we resumed to tal": "Khadeja",
       "i know u love me and i love u too but u r just making it har": "Khadeja",
       "im not saying everyday i just want you to reply to me when y": "Saleh",
+      // new batch
+      "i love the calender thing but the website is lagging a littl": "Khadeja",
+      "i wanna add things too": "Khadeja",
+      "i mean i have no photos to add": "Khadeja",
+      "i did it you can try it now, im going to be hugging you soon": "Saleh",
+      "accept my follow request": "Khadeja",
+      "khadeja i swear i need to talk to you right now about someth": "Saleh",
+      "this sohayb guy dont ever talk to her": "Saleh",
+      "if for somehow you want to text me in insta tell me here bec": "Saleh",
+      "i know im just shocked": "Saleh",
+      "you are the best person that has come across my life and i h": "Saleh",
+      "ull be okay": "Khadeja",
+      "add me": "Khadeja",
     };
 
     const log = document.getElementById('log');
@@ -115,7 +128,8 @@
 
         // Try exact match first, then prefix match
         for (const [pattern, sender] of Object.entries(textToSender)) {
-          if (normalised === pattern || normalised.startsWith(pattern) || pattern.startsWith(normalised.slice(0, 40))) {
+          const p = pattern.toLowerCase().trim();
+          if (normalised === p || normalised.startsWith(p) || p.startsWith(normalised.slice(0, 40))) {
             matched = sender;
             break;
           }
