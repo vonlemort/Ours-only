@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Extract VN Peaks</title>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+  <style>
+    body { font-family: sans-serif; max-width: 560px; margin: 50px auto; padding: 0 20px; background: #fff6fb; }
+    h2 { color: #ff6fa6; }
+    p { color: #7a3a4f; font-size: 14px; }
+    #log { margin-top: 20px; font-size: 12px; line-height: 2; max-height: 460px; overflow-y: auto;
+           background: #fff; border-radius: 12px; padding: 12px 16px; box-shadow: 0 4px 12px rgba(255,111,166,.1); }
+    .ok   { color: #27ae60; }
+    .err  { color: #e74c3c; }
+    .skip { color: #aaa; }
+    .inf  { color: #888; }
+    button { padding: 12px 28px; background: #ff6fa6; color: #fff; border: none;
+             border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; margin-top: 16px; }
+    button:disabled { opacity: .45; cursor: default; }
+    #progress { margin-top: 12px; height: 8px; background: rgba(255,111,166,.15);
+                border-radius: 999px; overflow: hidden; }
+    #progressFill { height: 100%; width: 0%; background: #ff6fa6; border-radius: 999px;
+                    transition: width .3s; }
+  </style>
+</head>
+<body>
+  <h2>🎙️ Extract waveforms for old voice notes</h2>
+  <p>This plays each old voice note silently, captures its waveform, and saves it to Firebase. Run it once — after that all waveforms show instantly on the site forever.</p>
+  <p><strong>Keep this tab open and don't close it until it says Done.</strong></p>
+  <button id="runBtn">Start</button>
+  <div id="progress"><div id="progressFill"></div></div>
+  <div id="log"></div>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyD7Rt9RFyk6DHsaqB_2KIv0QBGPGXYrWPo",
+      authDomain: "notes-8d314.firebaseapp.com",
+      databaseURL: "https://notes-8d314-default-rtdb.firebaseio.com",
+      projectId: "notes-8d314",
+      storageBucket: "notes-8d314.firebasestorage.app",
+      messagingSenderId: "46616929171",
+      appId: "1:46616929171:web:c3981641b271d3e33b3e66"
+    };
+    firebase.initializeApp(firebaseConfig);
+    firebase.auth().signInAnonymously();
+    const db = firebase.database();
+    const ROOM = 'for-khadeja';
+
+    const log  = document.getElementById('log');
+    const btn  = document.getElementById('runBtn');
+    const fill = document.getElementById('progressFill');
+
+    function line(msg, cls) {
+      const d = document.createElement('div');
+      d.className = cls || '';
+      d.textContent = msg;
+      log.appendChild(d);
+      log.scrollTop = log.scrollHeight;
+    }
+
+    // Decode audio from URL into AudioBuffer using fetch + decodeAudioData
+    // Firebase Storage URLs support CORS when accessed from the same origin (GitHub Pages)
+    function decodeURL(url) {
+      return fetch(url)
+        .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.arrayBuffer(); })
+        .then(buf => {
+          const actx = new (window.AudioContext || window.webkitAudioContext)();
+          return new Promise((res, rej) => actx.decodeAudioData(buf, res, rej));
+        });
+    }
+
+    function extractPeaks(audioBuffer) {
+      const data = audioBuffer.getChannelData(0);
+      const NUM  = 180;
+      const step = Math.max(1, Math.ceil(data.length / NUM));
+      const peaks = [];
+      for (let x = 0; x < NUM; x++) {
+        let max = 0;
+        for (let j = 0; j < step; j++) {
+          const a = Math.abs(data[x * step + j] || 0);
+          if (a > max) max = a;
+        }
+        peaks.push(parseFloat(max.toFixed(4)));
+      }
+      return peaks;
+    }
+
+    btn.addEventListener('click', async () => {
+      btn.disabled = true;
+      log.innerHTML = '';
+      line('Loading voice notes from Firebase…', 'inf');
+
+      const snap = await db.ref(`rooms/${ROOM}/voicenotes`).get();
+      const data = snap.val();
+      if (!data) { line('No voice notes found.', 'inf'); return; }
+
+      const entries = Object.entries(data);
+      const needsPeaks = entries.filter(([k, v]) => v && v.url && (!v.peaks || !v.peaks.length));
+      const alreadyDone = entries.length - needsPeaks.length;
+
+      line(`${entries.length} total — ${alreadyDone} already have waveforms, ${needsPeaks.length} need extracting.`, 'inf');
+      line('');
+
+      if (needsPeaks.length === 0) {
+        line('Nothing to do — all voice notes already have waveforms! 💞', 'ok');
+        return;
+      }
+
+      let done = 0, failed = 0;
+
+      for (const [key, n] of needsPeaks) {
+        try {
+          line(`⏳ Processing ${new Date(n.time).toLocaleDateString()} — ${n.duration ? Math.round(n.duration) + 's' : '?s'}…`, 'inf');
+          const audioBuf = await decodeURL(n.url);
+          const peaks = extractPeaks(audioBuf);
+          await db.ref(`rooms/${ROOM}/voicenotes/${key}/peaks`).set(peaks);
+          done++;
+          fill.style.width = Math.round((done / needsPeaks.length) * 100) + '%';
+          line(`✓ Saved waveform (${peaks.length} peaks)`, 'ok');
+        } catch(err) {
+          failed++;
+          line(`✗ Failed: ${err.message}`, 'err');
+        }
+        // Small delay between requests to avoid rate limiting
+        await new Promise(r => setTimeout(r, 300));
+      }
+
+      line('');
+      line(`Done — ${done} waveforms saved, ${failed} failed.`, done > 0 ? 'ok' : 'err');
+      if (failed > 0) line('The failed ones may have expired URLs — they\'ll build their waveform the first time someone plays them.', 'inf');
+      if (done > 0) line('Refresh the main site — all old voice notes will now show real waveforms! 💞', 'ok');
+    });
+  </script>
+</body>
+</html>
