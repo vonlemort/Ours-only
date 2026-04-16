@@ -2,28 +2,24 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Fix Note Senders</title>
+  <title>Fix 3 Notes</title>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
   <style>
-    body { font-family: sans-serif; max-width: 600px; margin: 40px auto; padding: 0 20px; }
-    #log { margin-top: 24px; font-size: 12px; line-height: 1.9; max-height: 500px; overflow-y: auto; }
-    .ok   { color: #27ae60; }
-    .err  { color: #e74c3c; }
-    .skip { color: #aaa; }
-    .inf  { color: #888; }
+    body { font-family: sans-serif; max-width: 500px; margin: 60px auto; padding: 0 20px; }
+    #log { margin-top: 24px; font-size: 13px; line-height: 1.9; }
+    .ok  { color: #27ae60; }
+    .err { color: #e74c3c; }
     button { padding: 12px 24px; background: #ff6fa6; color: #fff; border: none;
              border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; }
-    button:disabled { opacity: .5; cursor: default; }
+    button:disabled { opacity: .5; }
   </style>
 </head>
 <body>
-  <h2>🔧 Fix wrongly labelled notes</h2>
-  <p>Overwrites the sender field for every note in the list below, regardless of what it currently says.</p>
+  <h2>🔧 Fix 3 notes</h2>
   <button id="runBtn">Run fix</button>
   <div id="log"></div>
-
   <script>
     const firebaseConfig = {
       apiKey: "AIzaSyD7Rt9RFyk6DHsaqB_2KIv0QBGPGXYrWPo",
@@ -34,55 +30,15 @@
       messagingSenderId: "46616929171",
       appId: "1:46616929171:web:c3981641b271d3e33b3e66"
     };
-
     firebase.initializeApp(firebaseConfig);
     firebase.auth().signInAnonymously();
-
     const db = firebase.database();
     const ROOM = 'for-khadeja';
 
-    // Every entry here will be OVERWRITTEN with the correct sender
-    // Matched by lowercase prefix (first 40 chars)
-    const corrections = [
-      { prefix: "i wanna add in the cal",                              sender: "Khadeja" },
-      { prefix: "its not sm1 else",                                    sender: "Khadeja" },
-      { prefix: "i dont know if you will come back anymore",           sender: "Saleh"   },
-      { prefix: "dont wait",                                           sender: "Khadeja" },
-      { prefix: "so do i",                                             sender: "Khadeja" },
-      { prefix: "my heart is not okay with you leaving",               sender: "Saleh"   },
-      { prefix: "ull find better",                                     sender: "Khadeja" },
-      { prefix: "i told you many times",                               sender: "Saleh"   },
-      { prefix: "wanna call? for a last time",                         sender: "Khadeja" },
-      { prefix: "tell me when you want to call",                       sender: "Saleh"   },
-      { prefix: "hopefully u r not forgetting abt me right there",     sender: "Khadeja" },
-      { prefix: "i can't forget u",                                    sender: "Khadeja" },
-      { prefix: "it's 25 february i wonder what will happen",          sender: "Saleh"   },
-      { prefix: "two people that will always love",                    sender: "Khadeja" },
-      { prefix: "ww3 as if our relationship was easy already",         sender: "Khadeja" },
-      { prefix: "khadeja do i check the website everyday",             sender: "Saleh"   },
-      { prefix: "yes i want voice notes",                              sender: "Khadeja" },
-      { prefix: "okay",                                                sender: "Saleh"   },
-      { prefix: "please tell me",                                      sender: "Khadeja" },
-      { prefix: "i check and bee busy to write back",                  sender: "Khadeja" },
-      { prefix: "but why do you not reply when you check",               sender: "Saleh"   },
-      { prefix: "but why do you not reply when you check",              sender: "Saleh"   },
-      { prefix: "and for yourself saleh",                              sender: "Khadeja" },
-      { prefix: "i made it, use it whenever you want to",              sender: "Saleh"   },
-      { prefix: "i love you khadeja :(",                                sender: "Saleh"   },
-      { prefix: "i miss u",                                             sender: "Khadeja" },
-      { prefix: "i miss you too, i dreamt of you before yesterday",    sender: "Saleh"   },
-    ];
-
-    // These two have duplicate-ish text so we match by time (ms) as well
-    // "I miss you" at 5:51 PM = Khadeja, "I miss u" Mar 28 4:41 PM = Khadeja
-    // "i love you" Dec 14 7:50 PM = Saleh
-    // We handle these separately below by checking both text + time range
-    const timeCorrections = [
-      // i miss you — there are multiple, the one at ~5:51 PM any date = Khadeja
-      // We'll just set ALL "i miss you" (exact, no period) to Khadeja since Saleh's was "I miss u"
-      { textExact: "i miss you", sender: "Khadeja" },
-      // i love you — Dec 14 7:50 PM UTC+3 = ~1734169800000, we match Dec 14 2024
-      { textExact: "i love you", timeAfter: 1765670400000, timeBefore: 1765756799000, sender: "Saleh" },
+    const fixes = [
+      { key: '-OgSjkSuQE6IvCclVSYM', sender: 'Saleh'   }, // "I love you Khadeja :("
+      { key: '-OgSlLRVndMX1KigUgqR',  sender: 'Saleh'   }, // "i love you"
+      { key: '-OoofOzQSaJWMMWF6rfK',  sender: 'Khadeja' }, // "I miss u"
     ];
 
     const log = document.getElementById('log');
@@ -93,69 +49,19 @@
       d.className = cls || '';
       d.textContent = msg;
       log.appendChild(d);
-      log.scrollTop = log.scrollHeight;
     }
 
     btn.addEventListener('click', async () => {
       btn.disabled = true;
-      log.innerHTML = '';
-      line('Reading all notes…', 'inf');
-
-      const snap = await db.ref(`rooms/${ROOM}/notes`).get();
-      const data = snap.val();
-      if (!data) { line('No notes found.', 'inf'); return; }
-
-      const entries = Object.entries(data);
-      line(`Found ${entries.length} notes. Applying corrections…`, 'inf');
-      line('');
-
-      let fixed = 0, unmatched = 0;
-
-      for (const [key, val] of entries) {
-        if (!val || !val.text) continue;
-        const norm = val.text.trim().toLowerCase();
-
-        let newSender = null;
-
-        // Check prefix corrections
-        for (const { prefix, sender } of corrections) {
-          if (norm === prefix || norm.startsWith(prefix)) {
-            newSender = sender;
-            break;
-          }
-        }
-
-        // Check time-based corrections if no prefix match
-        if (!newSender) {
-          for (const tc of timeCorrections) {
-            if (norm === tc.textExact) {
-              if (tc.timeAfter !== undefined) {
-                if (val.time >= tc.timeAfter && val.time <= tc.timeBefore) {
-                  newSender = tc.sender;
-                  break;
-                }
-              } else {
-                newSender = tc.sender;
-                break;
-              }
-            }
-          }
-        }
-
-        if (newSender) {
-          try {
-            await db.ref(`rooms/${ROOM}/notes/${key}/sender`).set(newSender);
-            line(`✓ ${newSender}: "${val.text.slice(0, 60)}"`, 'ok');
-            fixed++;
-          } catch(err) {
-            line(`✗ Failed: ${err.message}`, 'err');
-          }
+      for (const { key, sender } of fixes) {
+        try {
+          await db.ref(`rooms/${ROOM}/notes/${key}/sender`).set(sender);
+          line(`✓ ${key} → ${sender}`, 'ok');
+        } catch(e) {
+          line(`✗ ${key} FAILED: ${e.message}`, 'err');
         }
       }
-
-      line('');
-      line(`Done — ${fixed} notes corrected.`, 'ok');
-      line('You can close this tab now. 💞');
+      line('Done 💞', 'ok');
     });
   </script>
 </body>
