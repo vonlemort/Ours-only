@@ -2619,7 +2619,7 @@ const flowerPhotos = [
           const dateStr = new Date(n.time || Date.now()).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' });
           const senderName = n.sender || null;
           const badgeCls = senderName ? senderName : 'unknown';
-          const badgeLabel = senderName ? (senderName === 'Saleh' ? '💙 Saleh' : '🌸 Khadeja') : '❓ Unknown';
+          const badgeLabel = senderName ? (senderName === 'Saleh' ? 'Saleh' : '🌸 Khadeja') : '❓ Unknown';
           card.innerHTML = `
             <span class="pin" aria-hidden="true"></span>
             <div class="noteBody"><p>${escapeHtml(n.text || '')}</p></div>
@@ -3870,7 +3870,7 @@ sendBtn.addEventListener('click', async () => {
         const canvasId = 'vnc-' + key;
         const senderName = n.sender || null;
         const badgeCls = senderName ? senderName : 'unknown';
-        const badgeLabel = senderName ? (senderName === 'Saleh' ? '💙 Saleh' : '🌸 Khadeja') : '❓ Unknown';
+        const badgeLabel = senderName ? (senderName === 'Saleh' ? 'Saleh' : '🌸 Khadeja') : '❓ Unknown';
         card.innerHTML = `
           <span class="pin" aria-hidden="true"></span>
           <div class="vnCardWaveWrap">
