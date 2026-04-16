@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Patch Notes By Text</title>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+  <style>
+    body { font-family: sans-serif; max-width: 600px; margin: 40px auto; padding: 0 20px; }
+    #log { margin-top: 24px; font-size: 12px; line-height: 1.9; max-height: 500px; overflow-y: auto; }
+    .ok  { color: #27ae60; }
+    .err { color: #e74c3c; }
+    .skip { color: #aaa; }
+    .inf { color: #888; }
+    button { padding: 12px 24px; background: #ff6fa6; color: #fff; border: none;
+             border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; }
+    button:disabled { opacity: .5; cursor: default; }
+  </style>
+</head>
+<body>
+  <h2>🔧 Patch notes senders (by text)</h2>
+  <p>This reads every note from Firebase, matches it by its actual text content, and sets the sender. Notes that already have a sender are skipped. Notes with no text are never touched.</p>
+  <button id="runBtn">Run patch</button>
+  <div id="log"></div>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyD7Rt9RFyk6DHsaqB_2KIv0QBGPGXYrWPo",
+      authDomain: "notes-8d314.firebaseapp.com",
+      databaseURL: "https://notes-8d314-default-rtdb.firebaseio.com",
+      projectId: "notes-8d314",
+      storageBucket: "notes-8d314.firebasestorage.app",
+      messagingSenderId: "46616929171",
+      appId: "1:46616929171:web:c3981641b271d3e33b3e66"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    firebase.auth().signInAnonymously();
+
+    const db = firebase.database();
+    const ROOM = 'for-khadeja';
+
+    // Map: first ~60 chars of note text (lowercase trimmed) → sender
+    // You gave me the order 1-131, I'm matching by actual text from Firebase screenshots
+    const textToSender = {
+      "you are the one i desire, thank you for being a part of my life": "Saleh",
+      "no one knows the way to my heart like u do": "Khadeja",
+      "i feel safe just thinking about you": "Khadeja",
+      "i've never enjoyed spending my time with anyone as much as i do with you. you give me such a sonder feeling everytime i spend my time": "Saleh",
+      "first night was hard already . i dont think i can do it": "Khadeja",
+      // add more below as you confirm them from Firebase
+      "i miss u": "Saleh",
+      "i miss you too, i dreamt of you before yesterday": "Khadeja",
+      "im also still working with the voicenotes i want to make it look nice not anything thats bad it will take a little time": "Saleh",
+      "i made it, use it whenever you want to": "Khadeja",
+      "dont forget me khadeja if anything happens you know my accounts you have no excuse i just dont want your love to fade away khadeja im afraid by time the less we talk the less you will become interested im sorry for overthinking": "Saleh",
+    };
+
+    const log = document.getElementById('log');
+    const btn = document.getElementById('runBtn');
+
+    function line(msg, cls) {
+      const d = document.createElement('div');
+      d.className = cls || '';
+      d.textContent = msg;
+      log.appendChild(d);
+      log.scrollTop = log.scrollHeight;
+    }
+
+    btn.addEventListener('click', async () => {
+      btn.disabled = true;
+      log.innerHTML = '';
+      line('Reading all notes from Firebase…', 'inf');
+
+      const snap = await db.ref(`rooms/${ROOM}/notes`).get();
+      const data = snap.val();
+      if (!data) { line('No notes found.', 'inf'); return; }
+
+      const entries = Object.entries(data);
+      line(`Found ${entries.length} notes. Matching by text…`, 'inf');
+      line('');
+
+      let patched = 0, skipped = 0, unmatched = 0;
+
+      for (const [key, val] of entries) {
+        if (!val || !val.text) continue; // skip blank entries
+
+        // Already has sender — skip
+        if (val.sender) {
+          line(`⏭ Already labelled (${val.sender}): "${val.text.slice(0,50)}"`, 'skip');
+          skipped++;
+          continue;
+        }
+
+        const normalised = val.text.trim().toLowerCase();
+        let matched = null;
+
+        // Try exact match first, then prefix match
+        for (const [pattern, sender] of Object.entries(textToSender)) {
+          if (normalised === pattern || normalised.startsWith(pattern) || pattern.startsWith(normalised.slice(0, 40))) {
+            matched = sender;
+            break;
+          }
+        }
+
+        if (matched) {
+          try {
+            await db.ref(`rooms/${ROOM}/notes/${key}/sender`).set(matched);
+            line(`✓ ${matched}: "${val.text.slice(0,60)}"`, 'ok');
+            patched++;
+          } catch(err) {
+            line(`✗ Failed: ${err.message}`, 'err');
+          }
+        } else {
+          line(`❓ No match found: "${val.text.slice(0,60)}"`, 'err');
+          unmatched++;
+        }
+      }
+
+      line('');
+      line(`Done — ${patched} patched, ${skipped} already done, ${unmatched} unmatched.`,
+           unmatched === 0 ? 'ok' : 'err');
+      if (unmatched > 0) {
+        line(`The unmatched ones above still show Unknown — tell me their text and who sent them.`, 'err');
+      }
+    });
+  </script>
+</body>
+</html>
