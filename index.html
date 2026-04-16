@@ -2619,7 +2619,7 @@ const flowerPhotos = [
           const dateStr = new Date(n.time || Date.now()).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' });
           const senderName = n.sender || null;
           const badgeCls = senderName ? senderName : 'unknown';
-          const badgeLabel = senderName ? (senderName === 'Saleh' ? 'Saleh' : '🌸 Khadeja') : '❓ Unknown';
+          const badgeLabel = senderName ? (senderName === 'Saleh' ? '💙 Saleh' : '🌸 Khadeja') : '❓ Unknown';
           card.innerHTML = `
             <span class="pin" aria-hidden="true"></span>
             <div class="noteBody"><p>${escapeHtml(n.text || '')}</p></div>
@@ -3870,7 +3870,7 @@ sendBtn.addEventListener('click', async () => {
         const canvasId = 'vnc-' + key;
         const senderName = n.sender || null;
         const badgeCls = senderName ? senderName : 'unknown';
-        const badgeLabel = senderName ? (senderName === 'Saleh' ? 'Saleh' : '🌸 Khadeja') : '❓ Unknown';
+        const badgeLabel = senderName ? (senderName === 'Saleh' ? '💙 Saleh' : '🌸 Khadeja') : '❓ Unknown';
         card.innerHTML = `
           <span class="pin" aria-hidden="true"></span>
           <div class="vnCardWaveWrap">
@@ -3964,22 +3964,65 @@ sendBtn.addEventListener('click', async () => {
               if (activePeaks) drawFromPeaks(activePeaks, cardAudio.currentTime / (cardAudio.duration || 1));
               timeEl.textContent = fmtSec(cardAudio.currentTime);
             };
-            // Once audio loads, extract peaks from it and save to Firebase
-            cardAudio.oncanplaythrough = () => {
-              if (!activePeaks && !n.peaks && n.url) {
-                // Use Web Audio to decode the already-loaded audio element
-                try {
-                  const actx = new (window.AudioContext || window.webkitAudioContext)();
-                  fetch(n.url)
-                    .then(r => r.arrayBuffer())
-                    .then(buf => actx.decodeAudioData(buf))
-                    .then(audioBuf => {
-                      activePeaks = extractPeaks(audioBuf);
-                      drawFromPeaks(activePeaks, cardAudio.currentTime / (cardAudio.duration || 1));
-                      // Save to Firebase so it never needs decoding again
-                      db.ref('rooms/' + ROOM_ID + '/voicenotes/' + key + '/peaks').set(activePeaks).catch(() => {});
-                    }).catch(() => {});
-                } catch(e) {}
+            // Live waveform via AnalyserNode — works without CORS
+            // Also builds peaks array as audio plays, saves to Firebase when done
+            let analyserCtx = null, analyserNode = null, analyserSrc = null;
+            let peakAccum = [], analyserRaf = null;
+            function setupAnalyser() {
+              if (analyserCtx || activePeaks) return;
+              try {
+                analyserCtx = new (window.AudioContext || window.webkitAudioContext)();
+                analyserSrc = analyserCtx.createMediaElementSource(cardAudio);
+                analyserNode = analyserCtx.createAnalyser();
+                analyserNode.fftSize = 256;
+                analyserSrc.connect(analyserNode);
+                analyserNode.connect(analyserCtx.destination);
+                peakAccum = [];
+                function tick() {
+                  if (!cardPlaying) { analyserRaf = null; return; }
+                  analyserRaf = requestAnimationFrame(tick);
+                  const buf = new Uint8Array(analyserNode.frequencyBinCount);
+                  analyserNode.getByteTimeDomainData(buf);
+                  // collect peak sample
+                  let mx = 0;
+                  for (let i = 0; i < buf.length; i++) { const v = Math.abs((buf[i] / 128) - 1); if (v > mx) mx = v; }
+                  peakAccum.push(parseFloat(mx.toFixed(4)));
+                  // draw live progress
+                  const progress = cardAudio.currentTime / (cardAudio.duration || 1);
+                  // build a temporary peaks array scaled to 180 points from what we have
+                  if (peakAccum.length >= 2) {
+                    const tmp = [];
+                    for (let x = 0; x < 180; x++) {
+                      tmp.push(peakAccum[Math.floor(x * peakAccum.length / 180)] || 0);
+                    }
+                    activePeaks = tmp;
+                    drawFromPeaks(activePeaks, progress);
+                  }
+                }
+                tick();
+              } catch(e) { console.warn('Analyser setup failed', e); }
+            }
+            cardAudio.onplay = () => {
+              if (analyserCtx && analyserCtx.state === 'suspended') analyserCtx.resume();
+              if (!analyserCtx && !activePeaks) setupAnalyser();
+              if (analyserRaf === null && analyserNode) {
+                // restart tick if paused
+                const buf = new Uint8Array(analyserNode.frequencyBinCount);
+                function tick() {
+                  if (!cardPlaying) { analyserRaf = null; return; }
+                  analyserRaf = requestAnimationFrame(tick);
+                  analyserNode.getByteTimeDomainData(buf);
+                  let mx = 0;
+                  for (let i = 0; i < buf.length; i++) { const v = Math.abs((buf[i]/128)-1); if(v>mx) mx=v; }
+                  peakAccum.push(parseFloat(mx.toFixed(4)));
+                  if (peakAccum.length >= 2) {
+                    const tmp = [];
+                    for (let x = 0; x < 180; x++) tmp.push(peakAccum[Math.floor(x*peakAccum.length/180)]||0);
+                    activePeaks = tmp;
+                    drawFromPeaks(activePeaks, cardAudio.currentTime/(cardAudio.duration||1));
+                  }
+                }
+                tick();
               }
             };
             cardAudio.onended = () => {
@@ -3988,6 +4031,11 @@ sendBtn.addEventListener('click', async () => {
               playBtn.style.background = 'var(--accent)';
               if (activePeaks) drawFromPeaks(activePeaks, 0);
               timeEl.textContent = fmtSec(n.duration || 0);
+              if (analyserRaf) { cancelAnimationFrame(analyserRaf); analyserRaf = null; }
+              // Save peaks to Firebase after first full play so next load is instant
+              if (activePeaks && !n.peaks && n.url) {
+                db.ref('rooms/' + ROOM_ID + '/voicenotes/' + key + '/peaks').set(activePeaks).catch(()=>{});
+              }
             };
           }
           if (cardPlaying) {
