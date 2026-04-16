@@ -2619,7 +2619,7 @@ const flowerPhotos = [
           const dateStr = new Date(n.time || Date.now()).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' });
           const senderName = n.sender || null;
           const badgeCls = senderName ? senderName : 'unknown';
-          const badgeLabel = senderName ? (senderName === 'Saleh' ? 'Saleh' : 'Khadeja🌸') : '❓ Unknown';
+          const badgeLabel = senderName ? (senderName === 'Saleh' ? 'Saleh' : 'Khadeja🌸 ') : '❓ Unknown';
           card.innerHTML = `
             <span class="pin" aria-hidden="true"></span>
             <div class="noteBody"><p>${escapeHtml(n.text || '')}</p></div>
@@ -3870,7 +3870,7 @@ sendBtn.addEventListener('click', async () => {
         const canvasId = 'vnc-' + key;
         const senderName = n.sender || null;
         const badgeCls = senderName ? senderName : 'unknown';
-        const badgeLabel = senderName ? (senderName === 'Saleh' ? 'Saleh' : 'Khadeja🌸 ') : '❓ Unknown';
+        const badgeLabel = senderName ? (senderName === 'Saleh' ? 'Saleh' : 'Khadeja🌸') : '❓ Unknown';
         card.innerHTML = `
           <span class="pin" aria-hidden="true"></span>
           <div class="vnCardWaveWrap">
@@ -3939,13 +3939,11 @@ sendBtn.addEventListener('click', async () => {
           cardAudio.currentTime = ((e.clientX - r.left) / r.width) * cardAudio.duration;
         });
 
-        // Play/pause — uses Web Audio API with clarity filter for better sound
-        let cardAudioCtx = null, cardSourceNode = null;
+        // Play/pause — plain Audio, no crossOrigin (required for Firebase Storage URLs)
         playBtn.addEventListener('click', () => {
           if (!cardAudio) {
             cardAudio = new Audio();
             cardAudio.preload = 'auto';
-            cardAudio.crossOrigin = 'anonymous';
             cardAudio.src = n.blobURL || n.url;
             cardAudio.ontimeupdate = () => {
               if (activePeaks) drawFromPeaks(activePeaks, cardAudio.currentTime / (cardAudio.duration || 1));
@@ -3965,34 +3963,6 @@ sendBtn.addEventListener('click', async () => {
             playBtn.textContent = '▶';
             playBtn.style.background = 'var(--accent)';
           } else {
-            // Set up Web Audio clarity chain on first play
-            if (!cardAudioCtx) {
-              try {
-                cardAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                const src = cardAudioCtx.createMediaElementSource(cardAudio);
-                // High-pass filter: cuts low-frequency rumble / muffled underwater sound
-                const hpf = cardAudioCtx.createBiquadFilter();
-                hpf.type = 'highpass';
-                hpf.frequency.value = 120; // cut below 120Hz
-                hpf.Q.value = 0.7;
-                // Presence boost: lifts 2–5kHz speech clarity band
-                const presence = cardAudioCtx.createBiquadFilter();
-                presence.type = 'peaking';
-                presence.frequency.value = 3000;
-                presence.gain.value = 3.5; // +3.5dB presence
-                presence.Q.value = 1.2;
-                src.connect(hpf);
-                hpf.connect(presence);
-                presence.connect(cardAudioCtx.destination);
-              } catch(err) {
-                // If Web Audio setup fails, fall back to plain playback
-                console.warn('Web Audio setup failed, using plain playback:', err);
-                cardAudioCtx = null;
-              }
-            }
-            if (cardAudioCtx && cardAudioCtx.state === 'suspended') {
-              cardAudioCtx.resume();
-            }
             cardAudio.play().catch(err => console.warn('Card play failed:', err));
             cardPlaying = true;
             playBtn.textContent = '❚❚';
