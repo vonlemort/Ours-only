@@ -68,6 +68,8 @@
       { prefix: "but why do you not reply when you check",              sender: "Saleh"   },
       { prefix: "and for yourself saleh",                              sender: "Khadeja" },
       { prefix: "i made it, use it whenever you want to",              sender: "Saleh"   },
+      { prefix: "i love you khadeja :(",                                sender: "Saleh"   },
+      { prefix: "i miss u",                                             sender: "Khadeja" },
       { prefix: "i miss you too, i dreamt of you before yesterday",    sender: "Saleh"   },
     ];
 
@@ -80,7 +82,7 @@
       // We'll just set ALL "i miss you" (exact, no period) to Khadeja since Saleh's was "I miss u"
       { textExact: "i miss you", sender: "Khadeja" },
       // i love you — Dec 14 7:50 PM UTC+3 = ~1734169800000, we match Dec 14 2024
-      { textExact: "i love you", timeAfter: 1734100000000, timeBefore: 1734200000000, sender: "Saleh" },
+      { textExact: "i love you", timeAfter: 1765670400000, timeBefore: 1765756799000, sender: "Saleh" },
     ];
 
     const log = document.getElementById('log');
