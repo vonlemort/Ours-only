@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Patch VN Senders</title>
+  <title>Patch Notes Senders</title>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
@@ -17,8 +17,8 @@
   </style>
 </head>
 <body>
-  <h2>🔧 Patch voice note senders</h2>
-  <p>Open this file in your browser while connected to the internet. Click the button once — it will write the correct <code>sender</code> field for all 14 old voice notes.</p>
+  <h2>🔧 Patch notes senders</h2>
+  <p>Click the button once to write the sender field for all notes.</p>
   <button id="runBtn">Run patch</button>
   <div id="log"></div>
 
@@ -39,21 +39,141 @@
     const db = firebase.database();
     const ROOM = 'for-khadeja';
 
+    // Keys in order from Firebase (top to bottom = oldest to newest)
+    // Mapped to your sender list 1-131 (34 skipped = unknown)
     const patches = [
-      { key: '-OnxrX0WuGGajPXzlB2Z', sender: 'Saleh'   },
-      { key: '-Oov71VFhFNTroHyG45z', sender: 'Khadeja'  },
-      { key: '-Op-TP4l4fOD5QPWhxKw', sender: 'Saleh'   },
-      { key: '-Op-TVpF7hdPvuwMr5rZ', sender: 'Saleh'   },
-      { key: '-OqDKHYhDxXVSkCfb9V9', sender: 'Khadeja'  },
-      { key: '-OqDKj49JZH-bMRLaoCY', sender: 'Khadeja'  },
-      { key: '-OqDKnl7rLdxFO7az26d', sender: 'Khadeja'  },
-      { key: '-OqGHxb7QeFrb-rqMLxJ', sender: 'Saleh'   },
-      { key: '-OqGIT9bQDt5h607JGJS', sender: 'Saleh'   },
-      { key: '-OqGJWSkpAsV-jHPmsqD', sender: 'Saleh'   },
-      { key: '-OqJ0jNOiAxRZT2gz27Q', sender: 'Khadeja'  },
-      { key: '-OqJ1DKoQz6qYrgQd1Uc', sender: 'Khadeja'  },
-      { key: '-OqJ2B90vhWV2whHoOOM', sender: 'Khadeja'  },
-      { key: '-OqJ2L0_-HQCEjuVSUl1', sender: 'Khadeja'  },
+      { key: '-Od8DIW1t6NAPFF8sHq9', sender: 'Saleh'   }, // 1
+      { key: '-Od8SB53feWbsj8GLCRV', sender: 'Khadeja' }, // 2
+      { key: '-Od9dQydwuS610dsLqHg', sender: 'Khadeja' }, // 3
+      { key: '-OdAMFTC9Rua7Kw-gSls', sender: 'Saleh'   }, // 4
+      { key: '-OdJ-vMDb2TlafIAWhDv', sender: 'Khadeja' }, // 5
+      { key: '-OdJWEtXEyXCntvvFY6d', sender: 'Saleh'   }, // 6
+      { key: '-OdK_6vchgpsutqy3rhn', sender: 'Saleh'   }, // 7
+      { key: '-OdOKorBXl8RoeD08ed5', sender: 'Khadeja' }, // 8
+      { key: '-OdOKxK3VYhW18kOk6LY', sender: 'Khadeja' }, // 9
+      { key: '-OdOL-fxYpLK2l7mHKbB', sender: 'Khadeja' }, // 10
+      { key: '-OdOL23Lx8nnAWHWYkuz', sender: 'Khadeja' }, // 11
+      { key: '-OdOXh3adFuszTJAz76q', sender: 'Saleh'   }, // 12
+      { key: '-OdOYG9E7NR67fMkwnOZ', sender: 'Saleh'   }, // 13
+      { key: '-OdObVXD2CX9g-9y_F7N', sender: 'Saleh'   }, // 14
+      // 15 = her
+      { key: '-OdPD-qG4uWGy8UfpLLW', sender: 'Khadeja' }, // 15
+      { key: '-OdPD5nEUm8GcrFe4B2Y', sender: 'Saleh'   }, // 16
+      { key: '-OdPKc84K736qr-VPijH', sender: 'Saleh'   }, // 17
+      { key: '-OdPp0CXvNPdd_cp2ja4', sender: 'Khadeja' }, // 18
+      { key: '-OdPr3vvTPfTCAqElWuJ', sender: 'Saleh'   }, // 19
+      { key: '-OdPrQEGqXvsVk4Wh4Sx', sender: 'Saleh'   }, // 20
+      { key: '-OdPyGFkkapm8-l1ctXI', sender: 'Saleh'   }, // 21
+      { key: '-OdTuI4TS1Dhe5Lq0oju', sender: 'Khadeja' }, // 22
+      { key: '-OdYxDMsh2w-8XNZOuUn', sender: 'Khadeja' }, // 23
+      { key: '-OdYxJTzITOSgFuGAA0k', sender: 'Khadeja' }, // 24
+      { key: '-OdZcDzBBmpennJxKTjh', sender: 'Saleh'   }, // 25
+      { key: '-OdZcKU8XGRyviFpIaxj', sender: 'Saleh'   }, // 26
+      { key: '-OdZd0nvFFRPQVHjFvPE', sender: 'Saleh'   }, // 27
+      { key: '-Ode3SOtCkoh8aJV5FMQ', sender: 'Saleh'   }, // 28
+      { key: '-OdeMNqd26TrJIAljk8L', sender: 'Saleh'   }, // 29
+      { key: '-OdeMPpCbyUqu6lD1H3B', sender: 'Saleh'   }, // 30
+      { key: '-OdeMR5MKsB8URxprOLu', sender: 'Saleh'   }, // 31
+      { key: '-OdeMUxbMsVkiukjUHWL', sender: 'Saleh'   }, // 32
+      { key: '-OdeMVaxK6_PdqKMpefd', sender: 'Saleh'   }, // 33
+      // 34 = skip (unknown)
+      { key: '-Oe3_bP51VGvxticWrPz', sender: 'Khadeja' }, // 35
+      { key: '-Oe7--47LCBgst2T_5ye', sender: 'Saleh'   }, // 36
+      { key: '-OeMyuVKGG5nwTkxBG2S', sender: 'Saleh'   }, // 37
+      { key: '-OfPoO1LVc_p-E5u1Kh4', sender: 'Saleh'   }, // 38
+      { key: '-OgEfHPe5PbSp9ZD7K7Q', sender: 'Saleh'   }, // 39
+      { key: '-OgNJg248BWuHJkhEJpa', sender: 'Saleh'   }, // 40
+      { key: '-OgQGMBriIkofudSqZpY', sender: 'Saleh'   }, // 41
+      { key: '-OgQGdS-0IM105QOT2dk', sender: 'Saleh'   }, // 42
+      { key: '-OgQHLWDy9XcJYa1PrJe', sender: 'Saleh'   }, // 43
+      { key: '-OgQIaR1b4BIPAIk4frX', sender: 'Saleh'   }, // 44
+      { key: '-OgQKGOTzo33DH6DdqPf', sender: 'Saleh'   }, // 45
+      { key: '-OgQioG2RoxGby1QTa_W', sender: 'Saleh'   }, // 46
+      { key: '-OgRGni0HQj_smyqqcpajP', sender: 'Khadeja' }, // 47
+      { key: '-OgS_l81eD6LIdgcPI9j', sender: 'Saleh'   }, // 48
+      { key: '-OgScrleCFo0ib1Axfi0', sender: 'Saleh'   }, // 49
+      { key: '-OgSd07uawya3Y8g5c5w', sender: 'Saleh'   }, // 50
+      { key: '-OgSdYoz9AT0HHRsOfRn', sender: 'Saleh'   }, // 51
+      { key: '-OgSdydC5oozFiux2nxB', sender: 'Saleh'   }, // 52
+      { key: '-OgSehCJGxzDly-FSTgY', sender: 'Saleh'   }, // 53
+      { key: '-OgSfViuBHo6IBg_9rRb', sender: 'Saleh'   }, // 54
+      { key: '-OgSg34unZxCfXoniy8j', sender: 'Saleh'   }, // 55
+      { key: '-OgShKkiQyYLacffiBZG', sender: 'Khadeja' }, // 56
+      { key: '-OgSiRANYrWtFXWYCqc7', sender: 'Saleh'   }, // 57
+      { key: '-OgSjkSuQE6IvCclVSYM', sender: 'Khadeja' }, // 58
+      { key: '-OgSkbBsP1ENiqZggk9o', sender: 'Saleh'   }, // 59
+      { key: '-OgSkc9yLatonQf29NBx', sender: 'Khadeja' }, // 60
+      { key: '-OgSktlqktAV4wOdWRSm', sender: 'Khadeja' }, // 61
+      { key: '-OgSkvxaFcORmNZG1scP', sender: 'Saleh'   }, // 62
+      { key: '-OgSkw0VrEEwJpi7gkU0', sender: 'Saleh'   }, // 63
+      { key: '-OgSkzM_Q-mxxzNYvRfE', sender: 'Saleh'   }, // 64
+      { key: '-OgSl3AOM7sXX6518-pM', sender: 'Khadeja' }, // 65
+      { key: '-OgSl78BkMeL15HLobRV', sender: 'Saleh'   }, // 66
+      { key: '-OgSl9YA57oH3E-kd_yl', sender: 'Saleh'   }, // 67
+      { key: '-OgSlESWKwVhRKjEsSfZ', sender: 'Saleh'   }, // 68
+      { key: '-OgSlLRVndMX1KigUgqR', sender: 'Khadeja' }, // 69
+      { key: '-OgSvKKYdXliiL25xH14', sender: 'Saleh'   }, // 70
+      { key: '-OgSw8f4So25Gcl01J0-', sender: 'Khadeja' }, // 71
+      { key: '-OgSwQLe7WfLNPzGwXZOX', sender: 'Saleh'  }, // 72
+      { key: '-OgSx3tHa24eA6XugOdM', sender: 'Saleh'   }, // 73
+      { key: '-OgSyU3vl0za6t4_hn-6', sender: 'Saleh'   }, // 74
+      { key: '-OgTLF1mxfvaqaZnAKMP', sender: 'Khadeja' }, // 75
+      { key: '-OgTMKyKwLh9tJIcwkoz', sender: 'Khadeja' }, // 76
+      { key: '-OhCAEkqtNsPpRnpyhOv', sender: 'Saleh'   }, // 77
+      { key: '-OhD-B0vmQjQADSZx5U0', sender: 'Saleh'   }, // 78
+      { key: '-OhD-Fu894uKoQy6FC9O', sender: 'Khadeja' }, // 79
+      { key: '-OiUEbrJ2twhB4u-AUiy', sender: 'Saleh'   }, // 80
+      { key: '-OicQPbbf-O9-nP7HfYX', sender: 'Saleh'   }, // 81
+      { key: '-OicRYRwgLeX5HHYlkIw', sender: 'Saleh'   }, // 82
+      { key: '-OidnLrhV056ieLb5xCV', sender: 'Saleh'   }, // 83
+      { key: '-Ok4aSG1301Dd8pwMOpj', sender: 'Saleh'   }, // 84
+      { key: '-OlE1nbaQr1OM3C8u8Uw', sender: 'Khadeja' }, // 85
+      { key: '-Olrc5B0t3GlAnppWAGU', sender: 'Khadeja' }, // 86
+      { key: '-OlrcEOR-rkGRTXKVrEL', sender: 'Khadeja' }, // 87
+      { key: '-OlrcGOMgxHZO-94iANp', sender: 'Khadeja' }, // 88
+      { key: '-OlrcqQGHTBAVIuNpKGD', sender: 'Saleh'   }, // 89
+      { key: '-Ols4kbCSOYO5qMjB8aR', sender: 'Saleh'   }, // 90
+      { key: '-Ols4rPAApvxzHVUFc7c', sender: 'Saleh'   }, // 91
+      { key: '-Olul3wUrbK3Hmg_pQKY', sender: 'Saleh'   }, // 92
+      { key: '-OmKaobFJnPFkXboIXO3', sender: 'Khadeja' }, // 93
+      { key: '-OmkZkXv4pdihZKinsE-', sender: 'Khadeja' }, // 94
+      { key: '-OmkZuLM2DlGdTtTvtC0', sender: 'Khadeja' }, // 95
+      { key: '-OmkZzlU5xdd4TzTxOtt', sender: 'Saleh'   }, // 96
+      { key: '-Oml38p6JXVXhlJ3cFGN', sender: 'Saleh'   }, // 97
+      { key: '-Oml3rrtGYoAS8XyvttG', sender: 'Saleh'   }, // 98
+      { key: '-OmrINb2Qe2MJBp-rfVL', sender: 'Khadeja' }, // 99
+      { key: '-On13qiZKWrQhIg7Er2G', sender: 'Saleh'   }, // 100
+      { key: '-On25q3Cz2fEjmqRFnej', sender: 'Saleh'   }, // 101
+      { key: '-On2tx2L1Chsc2EkFLm7', sender: 'Saleh'   }, // 102
+      { key: '-On71Coat7IPhk-tM714', sender: 'Khadeja' }, // 103
+      { key: '-On_PyTThn5VSSRje4wS', sender: 'Khadeja' }, // 104
+      { key: '-On_Q-xPZ_JKH14SuzK0', sender: 'Khadeja' }, // 105
+      { key: '-On_Q3uS3dDyKCbQyDi7', sender: 'Saleh'   }, // 106
+      { key: '-OnaXA5zbqGcFzA5mCaH', sender: 'Khadeja' }, // 107
+      { key: '-OnbdI7zEBs1AIwfqSq1', sender: 'Khadeja' }, // 108
+      { key: '-OnbdLkr064KbmSd1EqH', sender: 'Khadeja' }, // 109
+      { key: '-OnbdNkrQ2BaJjXRAffd', sender: 'Khadeja' }, // 110
+      { key: '-OnbdRdSt60oV6RFTzyN', sender: 'Khadeja' }, // 111
+      { key: '-OnbdSqTUYfwa36FE3zp', sender: 'Saleh'   }, // 112
+      { key: '-OncKHi4gmau2thaS30Z', sender: 'Saleh'   }, // 113
+      { key: '-OndOqHVwaWtUlk8taI7', sender: 'Khadeja' }, // 114
+      { key: '-OndQzGZVGPV0Bid5b95KYV', sender: 'Khadeja' }, // 115
+      { key: '-Ong_6xdqZdvsSiYBMwT', sender: 'Khadeja' }, // 116
+      { key: '-Ong_BPk3jZh0E1Kr0L9', sender: 'Khadeja' }, // 117
+      { key: '-Ong_LzhNEw38Dew17Ew', sender: 'Khadeja' }, // 118
+      { key: '-Ong_PIRQJvDC3hVqSAq', sender: 'Saleh'   }, // 119
+      { key: '-Ongg v17iGZv7lS0ASeX', sender: 'Saleh'  }, // 120
+      { key: '-Ongh8QK1CAqtj5SPPZ9', sender: 'Saleh'   }, // 121
+      { key: '-OnghRNO_ExUiPmsSlw7', sender: 'Saleh'   }, // 122
+      { key: '-OngiFSDFGoqsZPvKVHT', sender: 'Khadeja' }, // 123
+      { key: '-OnjkqZvrfDiGLsmV1tL', sender: 'Khadeja' }, // 124
+      { key: '-OnjkwsFMZZbvdg5BLME', sender: 'Khadeja' }, // 125
+      { key: '-OnjkzB4cg6Aj8774J78', sender: 'Saleh'   }, // 126
+      { key: '-Onkn7w7WJsXOv9h0BrP', sender: 'Saleh'   }, // 127
+      { key: '-Onkp2m6EI0hkewOHdWf', sender: 'Saleh'   }, // 128
+      { key: '-Onl66TN-4xsJC__B6XM', sender: 'Saleh'   }, // 129
+      { key: '-OnqZPRiuw_LAPmzt4xI', sender: 'Khadeja' }, // 130
+      { key: '-OoofOzQSaJWMMMWF6rfK', sender: 'Saleh'  }, // 131
     ];
 
     const log = document.getElementById('log');
@@ -74,7 +194,7 @@
       let ok = 0, fail = 0;
       for (const { key, sender } of patches) {
         try {
-          await db.ref(`rooms/${ROOM}/voicenotes/${key}/sender`).set(sender);
+          await db.ref(`rooms/${ROOM}/notes/${key}/sender`).set(sender);
           line(`✓ ${key}  →  ${sender}`, 'ok');
           ok++;
         } catch (err) {
