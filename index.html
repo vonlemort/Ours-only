@@ -378,8 +378,60 @@
       border-top: 1px dashed #e0cbd3;
       display: flex;
       justify-content: space-between;
-      align-items: center
+      align-items: center;
+      gap: 6px;
     }
+
+/* Sender badges */
+.senderBadge {
+  font-size: 11px;
+  font-weight: 800;
+  padding: 2px 9px;
+  border-radius: 999px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  letter-spacing: 0.02em;
+}
+.senderBadge.Saleh {
+  background: #e8f4ff;
+  color: #2471a3;
+  border: 1px solid #aed6f1;
+}
+.senderBadge.Khadeja {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  border: 1px solid rgba(255, 111, 166, 0.5);
+  color: #fff;
+  -webkit-text-fill-color: #fff;
+  text-shadow: 0 1px 3px rgba(100,0,60,0.35);
+  background: #ff6fa6;
+}
+.senderBadge.Khadeja::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 300%;
+  height: 100%;
+  background: linear-gradient(90deg,
+    #ff6fa6 0%, #ff6fa6 15%,
+    #c084fc 30%, #a855f7 45%,
+    #c084fc 55%, #ff6fa6 70%,
+    #ff6fa6 85%, #a855f7 100%
+  );
+  animation: khadejaFluid 2.5s linear infinite;
+  z-index: -1;
+}
+@keyframes khadejaFluid {
+  0%   { transform: translateX(0%); }
+  100% { transform: translateX(33.333%); }
+}
+.senderBadge.unknown {
+  background: #f5f5f5;
+  color: #aaa;
+  border: 1px solid #ddd;
+}
 
     /* ---- Songs ---- */
     .songsGrid {
@@ -2057,72 +2109,13 @@
   padding-top: 8px;
   border-top: 1px dashed #e0cbd3;
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
   align-items: center;
-  gap: 6px;
 }
 .vnCardFooter small {
   display: block;
   color: #8b6b73;
   font-size: 12px;
-}
-/* Sender badges — used on both notes and voice note cards */
-.senderBadge {
-  font-size: 11px;
-  font-weight: 800;
-  padding: 2px 9px;
-  border-radius: 999px;
-  white-space: nowrap;
-  flex-shrink: 0;
-  letter-spacing: 0.02em;
-}
-.senderBadge.Saleh {
-  background: #e8f4ff;
-  color: #2471a3;
-  border: 1px solid #aed6f1;
-}
-
-
-.senderBadge.Khadeja {
-  position: relative;
-  overflow: hidden;
-  border: 1px solid rgba(255, 111, 166, 0.5);
-  color: #fff;
-  -webkit-text-fill-color: #fff;
-  text-shadow: 0 1px 2px rgba(120,0,80,0.25);
-  background: #d946ef;
-}
-.senderBadge.Khadeja::before {
-  content: "";
-  position: absolute;
-  top: 0; left: 0;
-  width: 300%;
-  height: 100%;
-  background: linear-gradient(90deg, #ff6fa6, #ff6fa6, #a855f7, #a855f7, #ff6fa6, #ff6fa6, #a855f7, #a855f7, #ff6fa6);
-  animation: khadejaFluid 3s ease-in-out infinite;
-  z-index: -1;
-}
-@keyframes khadejaFluid {
-  0%   { transform: translateX(0%); }
-  50%  { transform: translateX(-50%); }
-  100% { transform: translateX(0%); }
-}
-.senderBadge.unknown {
-  background: #f5f5f5;
-  color: #aaa;
-  border: 1px solid #ddd;
-}
-
-
-/* Note card footer needs same flex layout as VN footer */
-.noteFooter {
-  margin-top: 10px;
-  padding-top: 8px;
-  border-top: 1px dashed #e0cbd3;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 6px;
 }
 .vnNotesBoard {
   display: grid;
@@ -2423,9 +2416,7 @@ const flowerPhotos = [
     /* Two separate codes — one per person */
     const CODES = { 'saleh': 'Khadeja', 'khadeja': 'Saleh' };
     const IDENTITY_KEY = 'lovesite_identity_v1';
-    /* Load saved identity (so they don't have to re-enter on every visit) */
-    let CURRENT_USER = localStorage.getItem(IDENTITY_KEY) || null; // 'Saleh' | 'Khadeja' | null
-
+    let CURRENT_USER = localStorage.getItem(IDENTITY_KEY) || null;
     const gateWrap = document.getElementById('gateWrap');
     const appShell = document.getElementById('appShell');
     const cuteFooter = document.getElementById('cuteFooter');
@@ -2642,7 +2633,7 @@ const flowerPhotos = [
           const dateStr = new Date(n.time || Date.now()).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' });
           const senderName = n.sender || null;
           const badgeCls = senderName ? senderName : 'unknown';
-        const badgeLabel = senderName ? (senderName === 'Saleh' ? '🦕 Saleh' : '🌸 Khadeja') : '❓ Unknown';
+          const badgeLabel = senderName ? (senderName === 'Saleh' ? '🦕 Saleh' : '🌸 Khadeja') : '❓ Unknown';
           card.innerHTML = `
             <span class="pin" aria-hidden="true"></span>
             <div class="noteBody"><p>${escapeHtml(n.text || '')}</p></div>
@@ -3494,7 +3485,6 @@ function openPage(p){
       const val = document.getElementById('codeField').value.trim().toLowerCase();
       const matchedName = CODES[val];
       if (matchedName) {
-        /* Set and persist identity */
         CURRENT_USER = matchedName;
         try { localStorage.setItem(IDENTITY_KEY, CURRENT_USER); } catch(e) {}
 
@@ -3556,14 +3546,13 @@ function openPage(p){
       let isHolding = false;
       let micStream = null;
 
-/* ---- Get mic (cached after first grant) ---- */
-async function ensureMic() {
-  if (micStream && micStream.active) return micStream;
-  micStream = await navigator.mediaDevices.getUserMedia({
-    audio: { sampleRate: 44100, channelCount: 1 }
-  });
-  return micStream;
-}
+      /* ---- Get mic (cached after first grant) ---- */
+      async function ensureMic() {
+        if (micStream && micStream.active) return micStream;
+        micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        return micStream;
+      }
+
       /* ---- AudioContext — always created fresh per action ---- */
       function makeAudioCtx() {
         return new (window.AudioContext || window.webkitAudioContext)();
@@ -3655,12 +3644,11 @@ async function ensureMic() {
           sourceNode = liveAudioCtx.createMediaStreamSource(stream);
           sourceNode.connect(analyser);
 
-          // Pick best supported format for this device, with high bitrate
+          // Pick best supported format for this device
           const mimeType = ['audio/webm;codecs=opus','audio/webm','audio/ogg;codecs=opus','audio/mp4','audio/aac','']
             .find(m => m === '' || MediaRecorder.isTypeSupported(m)) || '';
 
-          const recOptions = mimeType ? { mimeType, audioBitsPerSecond: 128000 } : { audioBitsPerSecond: 128000 };
-          mediaRec = new MediaRecorder(stream, recOptions);
+          mediaRec = new MediaRecorder(stream, mimeType ? { mimeType } : {});
           audioChunks = [];
           mediaRec.ondataavailable = ev => { if (ev.data && ev.data.size > 0) audioChunks.push(ev.data); };
           mediaRec.onstop = onRecStop;
@@ -3790,30 +3778,8 @@ sendBtn.addEventListener('click', async () => {
   sendBtn.textContent = '📤 Uploading…';
 
   try {
-    /* 1. Extract peaks from the blob NOW (while we still have it locally),
-          so the other person never needs to decode from the Storage URL */
-    let storedPeaks = null;
-    if (previewBuffer) {
-      const data = previewBuffer.getChannelData(0);
-      const NUM_PEAKS = 180; // matches canvas width
-      const step = Math.max(1, Math.ceil(data.length / NUM_PEAKS));
-      const peaks = [];
-      for (let x = 0; x < NUM_PEAKS; x++) {
-        let max = 0;
-        for (let j = 0; j < step; j++) {
-          const abs = Math.abs(data[x * step + j] || 0);
-          if (abs > max) max = abs;
-        }
-        peaks.push(parseFloat(max.toFixed(4)));
-      }
-      storedPeaks = peaks;
-    }
-
-    /* 2. Upload audio to Firebase Storage */
     const storage = firebase.storage();
-    const ext = (recordedBlob.type || '').includes('mp4') ? 'mp4'
-              : (recordedBlob.type || '').includes('ogg') ? 'ogg' : 'webm';
-    const fileName = `voicenotes/${ROOM_ID}/${Date.now()}.${ext}`;
+    const fileName = `voicenotes/${ROOM_ID}/${Date.now()}.webm`;
     const storageRef = storage.ref(fileName);
 
     await storageRef.put(recordedBlob, {
@@ -3823,7 +3789,6 @@ sendBtn.addEventListener('click', async () => {
     const downloadURL = await storageRef.getDownloadURL();
     const dur = previewBuffer ? previewBuffer.duration : 0;
 
-    /* 3. Write metadata (+ peaks + sender) to Realtime DB */
     const payload = {
       url: downloadURL,
       duration: dur,
@@ -3831,29 +3796,16 @@ sendBtn.addEventListener('click', async () => {
       uid: CURRENT_UID || null,
       sender: CURRENT_USER || null
     };
-    if (storedPeaks) payload.peaks = storedPeaks;
 
     const ref = db.ref(`rooms/${ROOM_ID}/voicenotes`).push(payload);
 
-    /* 4. Render locally using blob URL (instant, no CORS needed) */
     renderVNCard(ref.key, {
       url: downloadURL,
       blobURL: URL.createObjectURL(recordedBlob),
-      peaks: storedPeaks,
       duration: dur,
       time: Date.now(),
       sender: CURRENT_USER || null
     }, true);
-
-    /* 5. Clean up only on success */
-    if (previewAudio) { previewAudio.pause(); previewAudio = null; }
-    previewBuffer = null;
-    previewPlaying = false;
-    prevPlay.textContent = '▶';
-    prevPlay.style.background = 'var(--accent)';
-    preview.classList.remove('show');
-    recordedDataURL = null;
-    recordedBlob = null;
 
   } catch (err) {
     console.error('Upload failed:', err);
@@ -3862,6 +3814,14 @@ sendBtn.addEventListener('click', async () => {
     setTimeout(() => { hint.textContent = 'Hold to record'; hint.classList.remove('active'); }, 3000);
   }
 
+  if (previewAudio) { previewAudio.pause(); previewAudio = null; }
+  previewBuffer = null;
+  previewPlaying = false;
+  prevPlay.textContent = '▶';
+  prevPlay.style.background = 'var(--accent)';
+  preview.classList.remove('show');
+  recordedDataURL = null;
+  recordedBlob = null;
   sendBtn.disabled = false;
   sendBtn.textContent = '📌 Pin it';
 });
@@ -3885,8 +3845,6 @@ sendBtn.addEventListener('click', async () => {
         const dateStr = new Date(n.time || Date.now()).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' });
         const canvasId = 'vnc-' + key;
         const senderName = n.sender || null;
-        const badgeCls = senderName ? senderName : 'unknown';
-       const badgeLabel = senderName ? (senderName === 'Saleh' ? '🦕 Saleh' : '🌸 Khadeja') : '❓ Unknown';
         card.innerHTML = `
           <span class="pin" aria-hidden="true"></span>
           <div class="vnCardWaveWrap">
@@ -3896,98 +3854,48 @@ sendBtn.addEventListener('click', async () => {
           </div>
           <div class="vnCardFooter">
             <small>Added on ${dateStr}</small>
-            <span class="senderBadge ${badgeCls}">${badgeLabel}</span>
+            <span class="senderBadge ${senderName ? senderName : 'unknown'}">${senderName ? (senderName === 'Saleh' ? '🦕 Saleh' : '🌸 Khadeja') : '❓ Unknown'}</span>
           </div>`;
         board.insertBefore(card, board.firstChild);
 
         const canvas  = document.getElementById(canvasId);
         const timeEl  = document.getElementById('vnt-' + key);
         const playBtn = card.querySelector('.vnCardPlayBtn');
-        let cardAudio = null, cardPlaying = false;
+        let cardAudio = null, cardBuffer = null, cardPlaying = false;
 
-        /* ---- Waveform: use stored peaks if available, else try decode ---- */
-        // Draw from peaks array (works for both sender and receiver, no CORS)
-        function drawFromPeaks(peaks, progress) {
-          const ctx = canvas.getContext('2d');
-          const W = canvas.width, H = canvas.height;
-          ctx.clearRect(0, 0, W, H);
-          const mid = H / 2;
-          const cutoff = Math.floor(W * Math.min(Math.max(progress || 0), 1));
-          for (let x = 0; x < W; x++) {
-            const peakVal = peaks[Math.floor(x * peaks.length / W)] || 0;
-            const h = Math.max(2, peakVal * (H * 0.85));
-            ctx.fillStyle = x < cutoff ? '#ff6fa6' : 'rgba(255,111,166,0.22)';
-            ctx.fillRect(x, mid - h / 2, 1, h);
-          }
-        }
+        drawFlatWave(canvas);
 
-        // Store peaks for seek animation
-        let activePeaks = null;
+        // Decode waveform
+        decodeAudio(n.blobURL || n.url || n.dataURL).then(audioBuf => {
+          cardBuffer = audioBuf;
+          drawStaticWave(canvas, audioBuf, 0);
+          timeEl.textContent = fmtSec(audioBuf.duration);
+        }).catch(() => {});
 
-        function extractPeaks(audioBuffer) {
-          const data = audioBuffer.getChannelData(0);
-          const NUM_PEAKS = 180;
-          const step = Math.max(1, Math.ceil(data.length / NUM_PEAKS));
-          const peaks = [];
-          for (let x = 0; x < NUM_PEAKS; x++) {
-            let max = 0;
-            for (let j = 0; j < step; j++) { const a = Math.abs(data[x*step+j]||0); if(a>max) max=a; }
-            peaks.push(parseFloat(max.toFixed(4)));
-          }
-          return peaks;
-        }
-
-        // Fetch audio as blob then decode — works around CORS on Storage URLs
-        function decodeFromURL(url) {
-          return fetch(url)
-            .then(r => r.arrayBuffer())
-            .then(buf => {
-              const actx = new (window.AudioContext || window.webkitAudioContext)();
-              return new Promise((res, rej) => actx.decodeAudioData(buf, res, rej));
-            });
-        }
-
-        if (n.peaks && n.peaks.length) {
-          // Best case: peaks already in DB — instant
-          activePeaks = n.peaks;
-          drawFromPeaks(activePeaks, 0);
-        } else if (n.blobURL) {
-          // Sender just recorded — decode from local blob (no CORS issue)
-          decodeFromURL(n.blobURL).then(buf => {
-            activePeaks = extractPeaks(buf);
-            drawFromPeaks(activePeaks, 0);
-            timeEl.textContent = fmtSec(buf.duration);
-          }).catch(() => drawFlatWave(canvas));
-        } else {
-          // Old note with no peaks — will extract after play starts (see below)
-          drawFlatWave(canvas);
-        }
-
-        // Seek on canvas click
+        // Seek
         canvas.addEventListener('click', e => {
           if (!cardAudio || !cardAudio.duration) return;
           const r = canvas.getBoundingClientRect();
           cardAudio.currentTime = ((e.clientX - r.left) / r.width) * cardAudio.duration;
         });
 
-        // Play/pause — plain Audio, no crossOrigin (required for Firebase Storage URLs)
+        // Play/pause
         playBtn.addEventListener('click', () => {
           if (!cardAudio) {
             cardAudio = new Audio();
             cardAudio.preload = 'auto';
-            cardAudio.src = n.blobURL || n.url;
+            cardAudio.src = n.blobURL || n.url || n.dataURL;
             cardAudio.ontimeupdate = () => {
-              if (activePeaks) drawFromPeaks(activePeaks, cardAudio.currentTime / (cardAudio.duration || 1));
+              if (!cardBuffer) return;
+              drawStaticWave(canvas, cardBuffer, cardAudio.currentTime / (cardAudio.duration || 1));
               timeEl.textContent = fmtSec(cardAudio.currentTime);
             };
-
             cardAudio.onended = () => {
               cardPlaying = false;
               playBtn.textContent = '▶';
               playBtn.style.background = 'var(--accent)';
-              if (activePeaks) drawFromPeaks(activePeaks, 0);
-              timeEl.textContent = fmtSec(n.duration || 0);
-
+              if (cardBuffer) drawStaticWave(canvas, cardBuffer, 0);
+              timeEl.textContent = fmtSec(cardBuffer ? cardBuffer.duration : 0);
             };
           }
           if (cardPlaying) {
@@ -4002,7 +3910,7 @@ sendBtn.addEventListener('click', async () => {
             playBtn.style.background = '#e8004e';
           }
         });
-      }
+     }
 
 }
 
