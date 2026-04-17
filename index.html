@@ -3533,21 +3533,14 @@ function openPage(p){
       let isHolding = false;
       let micStream = null;
 
-      /* ---- Get mic (cached after first grant) ---- */
-      async function ensureMic() {
-        if (micStream && micStream.active) return micStream;
-        micStream = await navigator.mediaDevices.getUserMedia({
-          audio: {
-            echoCancellation: true,
-            noiseSuppression: true,
-            autoGainControl: true,
-            sampleRate: 48000,
-            channelCount: 1
-          }
-        });
-        return micStream;
-      }
-
+/* ---- Get mic (cached after first grant) ---- */
+async function ensureMic() {
+  if (micStream && micStream.active) return micStream;
+  micStream = await navigator.mediaDevices.getUserMedia({
+    audio: { sampleRate: 44100, channelCount: 1 }
+  });
+  return micStream;
+}
       /* ---- AudioContext — always created fresh per action ---- */
       function makeAudioCtx() {
         return new (window.AudioContext || window.webkitAudioContext)();
