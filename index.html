@@ -3549,7 +3549,9 @@ function openPage(p){
       /* ---- Get mic (cached after first grant) ---- */
       async function ensureMic() {
         if (micStream && micStream.active) return micStream;
-        micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          micStream = await navigator.mediaDevices.getUserMedia({
+          audio: { sampleRate: 44100, channelCount: 1 }
+        });
         return micStream;
       }
 
@@ -3648,7 +3650,8 @@ function openPage(p){
           const mimeType = ['audio/webm;codecs=opus','audio/webm','audio/ogg;codecs=opus','audio/mp4','audio/aac','']
             .find(m => m === '' || MediaRecorder.isTypeSupported(m)) || '';
 
-          mediaRec = new MediaRecorder(stream, mimeType ? { mimeType } : {});
+          const recOptions = mimeType ? { mimeType, audioBitsPerSecond: 128000 } : { audioBitsPerSecond: 128000 };
+          mediaRec = new MediaRecorder(stream, recOptions);
           audioChunks = [];
           mediaRec.ondataavailable = ev => { if (ev.data && ev.data.size > 0) audioChunks.push(ev.data); };
           mediaRec.onstop = onRecStop;
@@ -3863,14 +3866,8 @@ sendBtn.addEventListener('click', async () => {
         const playBtn = card.querySelector('.vnCardPlayBtn');
         let cardAudio = null, cardBuffer = null, cardPlaying = false;
 
-        drawFlatWave(canvas);
-
-        // Decode waveform
-        decodeAudio(n.blobURL || n.url || n.dataURL).then(audioBuf => {
-          cardBuffer = audioBuf;
-          drawStaticWave(canvas, audioBuf, 0);
-          timeEl.textContent = fmtSec(audioBuf.duration);
-        }).catch(() => {});
+      drawFlatWave(canvas);
+        timeEl.textContent = fmtSec(n.duration || 0);
 
         // Seek
         canvas.addEventListener('click', e => {
@@ -3879,54 +3876,82 @@ sendBtn.addEventListener('click', async () => {
           cardAudio.currentTime = ((e.clientX - r.left) / r.width) * cardAudio.duration;
         });
 
+        function setupAudioHandlers() {
+          cardAudio.ontimeupdate = () => {
+            if (!cardBuffer) return;
+            drawStaticWave(canvas, cardBuffer, cardAudio.currentTime / (cardAudio.duration || 1));
+            timeEl.textContent = fmtSec(cardAudio.currentTime);
+          };
+          cardAudio.onended = () => {
+            cardPlaying = false;
+            playBtn.textContent = '▶';
+            playBtn.style.background = 'var(--accent)';
+            if (cardBuffer) drawStaticWave(canvas, cardBuffer, 0);
+            timeEl.textContent = fmtSec(cardBuffer ? cardBuffer.duration : 0);
+          };
+        }
+
+        function doPlay() {
+          cardAudio.play().catch(err => console.warn('Card play failed:', err));
+          cardPlaying = true;
+          playBtn.textContent = '❚❚';
+          playBtn.style.background = '#e8004e';
+        }
+
         // Play/pause
         playBtn.addEventListener('click', () => {
-          if (!cardAudio) {
-            cardAudio = new Audio();
-            cardAudio.preload = 'auto';
-            // Always fetch through blob to bypass CORS on Firebase Storage URLs
-if (n.blobURL) {
-  cardAudio.src = n.blobURL;
-} else {
-  fetch(n.url)
-    .then(r => r.blob())
-    .then(blob => {
-      const blobURL = URL.createObjectURL(blob);
-      n.blobURL = blobURL; // cache it so seeking/replay works
-      cardAudio.src = blobURL;
-      if (!cardPlaying) return;
-      cardAudio.play().catch(err => console.warn('Card play failed:', err));
-    })
-    .catch(err => {
-      console.warn('Fetch failed, falling back to direct URL:', err);
-      cardAudio.src = n.url;
-    });
-  return; // wait for fetch to complete before playing
-}
-            cardAudio.ontimeupdate = () => {
-              if (!cardBuffer) return;
-              drawStaticWave(canvas, cardBuffer, cardAudio.currentTime / (cardAudio.duration || 1));
-              timeEl.textContent = fmtSec(cardAudio.currentTime);
-            };
-            cardAudio.onended = () => {
-              cardPlaying = false;
-              playBtn.textContent = '▶';
-              playBtn.style.background = 'var(--accent)';
-              if (cardBuffer) drawStaticWave(canvas, cardBuffer, 0);
-              timeEl.textContent = fmtSec(cardBuffer ? cardBuffer.duration : 0);
-            };
-          }
           if (cardPlaying) {
             cardAudio.pause();
             cardPlaying = false;
             playBtn.textContent = '▶';
             playBtn.style.background = 'var(--accent)';
-          } else {
-            cardAudio.play().catch(err => console.warn('Card play failed:', err));
-            cardPlaying = true;
-            playBtn.textContent = '❚❚';
-            playBtn.style.background = '#e8004e';
+            return;
           }
+
+          if (!cardAudio) {
+            cardAudio = new Audio();
+            cardAudio.preload = 'auto';
+            setupAudioHandlers();
+
+            if (n.blobURL) {
+              // Fresh recording — already local, play instantly
+              cardAudio.src = n.blobURL;
+              // Decode waveform from local blob
+              decodeAudio(n.blobURL).then(audioBuf => {
+                cardBuffer = audioBuf;
+                drawStaticWave(canvas, audioBuf, 0);
+              }).catch(() => {});
+              doPlay();
+            } else {
+              // Loaded from DB — fetch as blob first to bypass CORS
+              playBtn.textContent = '…';
+              playBtn.disabled = true;
+              fetch(n.url)
+                .then(r => r.blob())
+                .then(blob => {
+                  const blobURL = URL.createObjectURL(blob);
+                  n.blobURL = blobURL;
+                  cardAudio.src = blobURL;
+                  playBtn.disabled = false;
+                  // Decode waveform now that we have the blob
+                  decodeAudio(blobURL).then(audioBuf => {
+                    cardBuffer = audioBuf;
+                    drawStaticWave(canvas, audioBuf, 0);
+                    timeEl.textContent = fmtSec(audioBuf.duration);
+                  }).catch(() => {});
+                  doPlay();
+                })
+                .catch(err => {
+                  console.warn('Fetch failed, trying direct URL:', err);
+                  cardAudio.src = n.url;
+                  playBtn.disabled = false;
+                  doPlay();
+                });
+            }
+            return;
+          }
+
+          doPlay();
         });
      }
 
