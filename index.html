@@ -3884,7 +3884,25 @@ sendBtn.addEventListener('click', async () => {
           if (!cardAudio) {
             cardAudio = new Audio();
             cardAudio.preload = 'auto';
-            cardAudio.src = n.blobURL || n.url || n.dataURL;
+            // Always fetch through blob to bypass CORS on Firebase Storage URLs
+if (n.blobURL) {
+  cardAudio.src = n.blobURL;
+} else {
+  fetch(n.url)
+    .then(r => r.blob())
+    .then(blob => {
+      const blobURL = URL.createObjectURL(blob);
+      n.blobURL = blobURL; // cache it so seeking/replay works
+      cardAudio.src = blobURL;
+      if (!cardPlaying) return;
+      cardAudio.play().catch(err => console.warn('Card play failed:', err));
+    })
+    .catch(err => {
+      console.warn('Fetch failed, falling back to direct URL:', err);
+      cardAudio.src = n.url;
+    });
+  return; // wait for fetch to complete before playing
+}
             cardAudio.ontimeupdate = () => {
               if (!cardBuffer) return;
               drawStaticWave(canvas, cardBuffer, cardAudio.currentTime / (cardAudio.duration || 1));
