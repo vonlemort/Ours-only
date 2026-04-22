@@ -3774,64 +3774,40 @@ mediaRec = new MediaRecorder(stream, recOptions);
 
 sendBtn.addEventListener('click', async () => {
   if (!recordedBlob) return;
-
   sendBtn.disabled = true;
   sendBtn.textContent = '📤 Uploading…';
-
   try {
+    let peaks = [];
+    try {
+      const arrayBuf = await recordedBlob.arrayBuffer();
+      const actx = new (window.AudioContext || window.webkitAudioContext)();
+      const audioBuf = await new Promise((res, rej) => actx.decodeAudioData(arrayBuf, res, rej));
+      actx.close();
+      const data = audioBuf.getChannelData(0);
+      const PEAK_COUNT = 80;
+      const step = Math.floor(data.length / PEAK_COUNT);
+      for (let i = 0; i < PEAK_COUNT; i++) {
+        let max = 0;
+        for (let j = 0; j < step; j++) { const abs = Math.abs(data[i * step + j] || 0); if (abs > max) max = abs; }
+        peaks.push(parseFloat(max.toFixed(3)));
+      }
+    } catch(e) { peaks = new Array(80).fill(0.05); }
+
     const storage = firebase.storage();
     const fileName = `voicenotes/${ROOM_ID}/${Date.now()}.webm`;
     const storageRef = storage.ref(fileName);
-
-    await storageRef.put(recordedBlob, {
-      contentType: recordedBlob.type || 'audio/webm'
-    });
-
+    await storageRef.put(recordedBlob, { contentType: recordedBlob.type || 'audio/webm' });
     const downloadURL = await storageRef.getDownloadURL();
     const dur = previewBuffer ? previewBuffer.duration : 0;
 
-let peaks = [];
-try {
-  const arrayBuf = await recordedBlob.arrayBuffer();
-  const actx = new (window.AudioContext || window.webkitAudioContext)();
-  const audioBuf = await new Promise((res, rej) => actx.decodeAudioData(arrayBuf, res, rej));
-  actx.close();
-  const data = audioBuf.getChannelData(0);
-  const PEAK_COUNT = 80;
-  const step = Math.floor(data.length / PEAK_COUNT);
-  for (let i = 0; i < PEAK_COUNT; i++) {
-    let max = 0;
-    for (let j = 0; j < step; j++) { const abs = Math.abs(data[i * step + j] || 0); if (abs > max) max = abs; }
-    peaks.push(parseFloat(max.toFixed(3)));
-  }
-} catch(e) { peaks = new Array(80).fill(0.05); }
-
-const payload = {
-  url: downloadURL,
-  duration: dur,
-  peaks: peaks,
-  time: Date.now(),
-  uid: CURRENT_UID || null,
-  sender: CURRENT_USER || null
-};
-
-renderVNCard(ref.key, {
-  url: downloadURL,
-  blobURL: URL.createObjectURL(recordedBlob),
-  duration: dur,
-  peaks: peaks,
-  time: Date.now(),
-  sender: CURRENT_USER || null
-}, true);
-
-    const ref = db.ref(`rooms/${ROOM_ID}/voicenotes`).push(payload);
+    const ref = db.ref(`rooms/${ROOM_ID}/voicenotes`).push({
+      url: downloadURL, duration: dur, peaks: peaks,
+      time: Date.now(), uid: CURRENT_UID || null, sender: CURRENT_USER || null
+    });
 
     renderVNCard(ref.key, {
-      url: downloadURL,
-      blobURL: URL.createObjectURL(recordedBlob),
-      duration: dur,
-      time: Date.now(),
-      sender: CURRENT_USER || null
+      url: downloadURL, blobURL: URL.createObjectURL(recordedBlob),
+      duration: dur, peaks: peaks, time: Date.now(), sender: CURRENT_USER || null
     }, true);
 
   } catch (err) {
@@ -3840,17 +3816,12 @@ renderVNCard(ref.key, {
     hint.classList.add('active');
     setTimeout(() => { hint.textContent = 'Hold to record'; hint.classList.remove('active'); }, 3000);
   }
-
   if (previewAudio) { previewAudio.pause(); previewAudio = null; }
-  previewBuffer = null;
-  previewPlaying = false;
-  prevPlay.textContent = '▶';
-  prevPlay.style.background = 'var(--accent)';
+  previewBuffer = null; previewPlaying = false;
+  prevPlay.textContent = '▶'; prevPlay.style.background = 'var(--accent)';
   preview.classList.remove('show');
-  recordedDataURL = null;
-  recordedBlob = null;
-  sendBtn.disabled = false;
-  sendBtn.textContent = '📌 Pin it';
+  recordedDataURL = null; recordedBlob = null;
+  sendBtn.disabled = false; sendBtn.textContent = '📌 Pin it';
 });
 
 
@@ -3939,67 +3910,84 @@ if (n.peaks && n.peaks.length) {
           cardAudio.currentTime = ((e.clientX - r.left) / r.width) * cardAudio.duration;
         });
 
-        // Play/pause
-        playBtn.addEventListener('click', () => {
-          if (!cardAudio) {
-            cardAudio = new Audio();
-            cardAudio.preload = 'auto';
-            if (n.blobURL) {
-  cardAudio.src = n.blobURL;
-} else {
-  playBtn.textContent = '…';
-  playBtn.disabled = true;
-  fetch(n.url)
-    .then(r => r.blob())
-    .then(blob => {
-      const blobURL = URL.createObjectURL(blob);
-      n.blobURL = blobURL;
-      cardAudio.src = blobURL;
-      playBtn.disabled = false;
-      decodeAudio(blobURL).then(audioBuf => {
-        cardBuffer = audioBuf;
-        drawStaticWave(canvas, audioBuf, 0);
-        timeEl.textContent = fmtSec(audioBuf.duration);
-      }).catch(() => {});
-      cardAudio.play().catch(err => console.warn('Card play failed:', err));
-      cardPlaying = true;
-      playBtn.textContent = '❚❚';
-      playBtn.style.background = '#e8004e';
-    })
-    .catch(() => {
-      cardAudio.src = n.url;
-      playBtn.disabled = false;
-    });
-  return;
+function drawPeaksWithProgress(progress) {
+  if (!n.peaks || !n.peaks.length) return;
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+  const mid = H / 2;
+  const barW = W / n.peaks.length;
+  const cutoff = Math.floor(W * Math.min(Math.max(progress, 0), 1));
+  n.peaks.forEach((peak, i) => {
+    const x = Math.floor(i * barW);
+    const h = Math.max(2, peak * (H * 0.85));
+    ctx.fillStyle = x < cutoff ? '#ff6fa6' : 'rgba(255,111,166,0.22)';
+    ctx.fillRect(x, mid - h / 2, Math.max(1, barW - 1), h);
+  });
 }
-            cardAudio.ontimeupdate = () => {
-              if (!cardBuffer) return;
-              drawStaticWave(canvas, cardBuffer, cardAudio.currentTime / (cardAudio.duration || 1));
-              timeEl.textContent = fmtSec(cardAudio.currentTime);
-            };
-            cardAudio.onended = () => {
-              cardPlaying = false;
-              playBtn.textContent = '▶';
-              playBtn.style.background = 'var(--accent)';
-              if (cardBuffer) drawStaticWave(canvas, cardBuffer, 0);
-              timeEl.textContent = fmtSec(cardBuffer ? cardBuffer.duration : 0);
-            };
-          }
-          if (cardPlaying) {
-            cardAudio.pause();
-            cardPlaying = false;
-            playBtn.textContent = '▶';
-            playBtn.style.background = 'var(--accent)';
-          } else {
-            cardAudio.play().catch(err => console.warn('Card play failed:', err));
-            cardPlaying = true;
-            playBtn.textContent = '❚❚';
-            playBtn.style.background = '#e8004e';
-          }
-        });
-     }
 
+function setupAudioHandlers() {
+  cardAudio.ontimeupdate = () => {
+    const progress = cardAudio.currentTime / (cardAudio.duration || 1);
+    if (cardBuffer) drawStaticWave(canvas, cardBuffer, progress);
+    else drawPeaksWithProgress(progress);
+    timeEl.textContent = fmtSec(cardAudio.currentTime);
+  };
+  cardAudio.onended = () => {
+    cardPlaying = false;
+    playBtn.textContent = '▶';
+    playBtn.style.background = 'var(--accent)';
+    if (cardBuffer) drawStaticWave(canvas, cardBuffer, 0);
+    else drawPeaksWithProgress(0);
+    timeEl.textContent = fmtSec(cardBuffer ? cardBuffer.duration : (n.duration || 0));
+  };
 }
+
+function doPlay() {
+  cardAudio.play().catch(err => console.warn('Card play failed:', err));
+  cardPlaying = true;
+  playBtn.textContent = '❚❚';
+  playBtn.style.background = '#e8004e';
+}
+
+playBtn.addEventListener('click', () => {
+  if (cardPlaying) {
+    cardAudio.pause();
+    cardPlaying = false;
+    playBtn.textContent = '▶';
+    playBtn.style.background = 'var(--accent)';
+    return;
+  }
+  if (!cardAudio) {
+    cardAudio = new Audio();
+    cardAudio.preload = 'auto';
+    setupAudioHandlers();
+    if (n.blobURL) {
+      cardAudio.src = n.blobURL;
+      doPlay();
+    } else {
+      playBtn.textContent = '…';
+      playBtn.disabled = true;
+      fetch(n.url)
+        .then(r => r.blob())
+        .then(blob => {
+          const blobURL = URL.createObjectURL(blob);
+          n.blobURL = blobURL;
+          cardAudio.src = blobURL;
+          playBtn.disabled = false;
+          decodeAudio(blobURL).then(audioBuf => {
+            cardBuffer = audioBuf;
+            drawStaticWave(canvas, audioBuf, 0);
+            timeEl.textContent = fmtSec(audioBuf.duration);
+          }).catch(() => {});
+          doPlay();
+        })
+        .catch(() => { cardAudio.src = n.url; playBtn.disabled = false; doPlay(); });
+    }
+    return;
+  }
+  doPlay();
+});
 
     function loadVoiceNotes() {
       const board = document.getElementById('vnNotesBoard');
