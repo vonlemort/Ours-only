@@ -3790,13 +3790,39 @@ sendBtn.addEventListener('click', async () => {
     const downloadURL = await storageRef.getDownloadURL();
     const dur = previewBuffer ? previewBuffer.duration : 0;
 
-    const payload = {
-      url: downloadURL,
-      duration: dur,
-      time: Date.now(),
-      uid: CURRENT_UID || null,
-      sender: CURRENT_USER || null
-    };
+let peaks = [];
+try {
+  const arrayBuf = await recordedBlob.arrayBuffer();
+  const actx = new (window.AudioContext || window.webkitAudioContext)();
+  const audioBuf = await new Promise((res, rej) => actx.decodeAudioData(arrayBuf, res, rej));
+  actx.close();
+  const data = audioBuf.getChannelData(0);
+  const PEAK_COUNT = 80;
+  const step = Math.floor(data.length / PEAK_COUNT);
+  for (let i = 0; i < PEAK_COUNT; i++) {
+    let max = 0;
+    for (let j = 0; j < step; j++) { const abs = Math.abs(data[i * step + j] || 0); if (abs > max) max = abs; }
+    peaks.push(parseFloat(max.toFixed(3)));
+  }
+} catch(e) { peaks = new Array(80).fill(0.05); }
+
+const payload = {
+  url: downloadURL,
+  duration: dur,
+  peaks: peaks,
+  time: Date.now(),
+  uid: CURRENT_UID || null,
+  sender: CURRENT_USER || null
+};
+
+renderVNCard(ref.key, {
+  url: downloadURL,
+  blobURL: URL.createObjectURL(recordedBlob),
+  duration: dur,
+  peaks: peaks,
+  time: Date.now(),
+  sender: CURRENT_USER || null
+}, true);
 
     const ref = db.ref(`rooms/${ROOM_ID}/voicenotes`).push(payload);
 
@@ -3864,14 +3890,47 @@ sendBtn.addEventListener('click', async () => {
         const playBtn = card.querySelector('.vnCardPlayBtn');
         let cardAudio = null, cardBuffer = null, cardPlaying = false;
 
-        drawFlatWave(canvas);
-
-        // Decode waveform
-        decodeAudio(n.blobURL || n.url || n.dataURL).then(audioBuf => {
-          cardBuffer = audioBuf;
-          drawStaticWave(canvas, audioBuf, 0);
-          timeEl.textContent = fmtSec(audioBuf.duration);
-        }).catch(() => {});
+if (n.peaks && n.peaks.length) {
+  // Draw instantly from saved peaks — zero network
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+  const mid = H / 2;
+  const barW = W / n.peaks.length;
+  n.peaks.forEach((peak, i) => {
+    const x = Math.floor(i * barW);
+    const h = Math.max(2, peak * (H * 0.85));
+    ctx.fillStyle = 'rgba(255,111,166,0.22)';
+    ctx.fillRect(x, mid - h / 2, Math.max(1, barW - 1), h);
+  });
+} else {
+  drawFlatWave(canvas);
+  // No peaks saved — fetch blob, decode, draw, then save peaks to DB for next time
+  fetch(n.url)
+    .then(r => r.blob())
+    .then(blob => {
+      const blobURL = URL.createObjectURL(blob);
+      n.blobURL = n.blobURL || blobURL;
+      return decodeAudio(blobURL);
+    })
+    .then(audioBuf => {
+      cardBuffer = audioBuf;
+      drawStaticWave(canvas, audioBuf, 0);
+      timeEl.textContent = fmtSec(audioBuf.duration);
+      // Save peaks to DB so this never has to fetch again
+      const data = audioBuf.getChannelData(0);
+      const PEAK_COUNT = 80;
+      const step = Math.floor(data.length / PEAK_COUNT);
+      const peaks = [];
+      for (let i = 0; i < PEAK_COUNT; i++) {
+        let max = 0;
+        for (let j = 0; j < step; j++) { const abs = Math.abs(data[i * step + j] || 0); if (abs > max) max = abs; }
+        peaks.push(parseFloat(max.toFixed(3)));
+      }
+      db.ref(`rooms/${ROOM_ID}/voicenotes/${key}`).update({ peaks });
+    })
+    .catch(() => {});
+}
 
         // Seek
         canvas.addEventListener('click', e => {
