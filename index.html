@@ -3457,24 +3457,25 @@ function openPage(p){
       });
     }
 
-    function showBirthdayCakeIfNeeded() {
-      const overlay = document.getElementById('cakeOverlay');
-      if (!overlay) return;
+function showBirthdayCakeIfNeeded() {
+  const overlay = document.getElementById('cakeOverlay');
+  if (!overlay) return;
 
-      let shouldShow = false;
+  let shouldShow = false;
 
-      if (FORCE_CAKE_PREVIEW) {
-        // Testing mode – always show
-        shouldShow = true;
-      } else {
-        // Use HER timezone (Mohammedia / Casablanca)
-        const moroccoDate = moroccoDateISO(); // "2025-12-12" in Africa/Casablanca
-        if (moroccoDate === BDAY_DATE) {
-          shouldShow = true;
-        }
-      }
+  if (FORCE_CAKE_PREVIEW) {
+    // Testing mode – always show
+    shouldShow = true;
+  } else {
+    // Use HER timezone (Mohammedia / Casablanca)
+    const moroccoDate = moroccoDateISO(); // "YYYY-MM-DD" in Africa/Casablanca
+    const monthDay = moroccoDate.slice(5); // "MM-DD"
+    if (monthDay === '12-12') {
+      shouldShow = true;
+    }
+  }
 
-      if (!shouldShow) return;
+  if (!shouldShow) return;
 
       overlay.classList.add('show');
       createConfetti();
