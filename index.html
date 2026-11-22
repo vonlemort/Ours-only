@@ -2372,6 +2372,7 @@ const flowerPhotos = [
     }
 
     async function logUnlockEvent() {
+      if (!OPTIONAL_CLOUD_FEATURES) return;
       try {
         const geo = await getCountryInfo();
         const payload = {
@@ -2461,6 +2462,8 @@ const flowerPhotos = [
     ensureFirebaseUser().catch(error => console.error('Firebase sign-in failed:', error));
     const db = firebase.database();
     const ROOM_ID = 'for-khadeja';
+    // Only text and voice notes use the restored Firebase backend.
+    const OPTIONAL_CLOUD_FEATURES = false;
     const TAGS_REF = db.ref(`rooms/${ROOM_ID}/calendarTags`);
     const LOGS_REF = db.ref(`rooms/${ROOM_ID}/logs`);
 
@@ -2927,7 +2930,7 @@ function openPage(p){
             <span><b>${pretty}</b> — ${escapeHtml(obj.label)}</span>
             <button class="x" title="Remove">✕</button>
           `;
-          chip.querySelector('.x').onclick = () => TAGS_REF.child(k).remove();
+          chip.querySelector('.x').onclick = () => { if (OPTIONAL_CLOUD_FEATURES) TAGS_REF.child(k).remove(); };
           chips.appendChild(chip);
         }
       }
@@ -2961,6 +2964,7 @@ function openPage(p){
         const dateVal = tagDate.value.trim();
         const labelVal = tagLabel.value.trim();
         if (!dateVal || !labelVal) return;
+        if (!OPTIONAL_CLOUD_FEATURES) return;
         TAGS_REF.child(dateVal).set({ label: labelVal, ts: Date.now() });
         tagLabel.value = '';
       });
@@ -2972,12 +2976,13 @@ function openPage(p){
         const txt = prompt(current ? 'Edit tag for this day:' : 'Add a tag for this day:', current);
         if (txt === null) return;
         const label = txt.trim();
+        if (!OPTIONAL_CLOUD_FEATURES) return;
         if (!label) return TAGS_REF.child(k).remove();
         TAGS_REF.child(k).set({ label, ts: Date.now() });
       }
       window.onDayClick = onDayClick;
 
-      TAGS_REF.on('value', snap => {
+      if (OPTIONAL_CLOUD_FEATURES) TAGS_REF.on('value', snap => {
         latestTags = snap.val() || {};
         renderMarks();
       });
@@ -3515,7 +3520,7 @@ function showBirthdayCakeIfNeeded() {
         CURRENT_USER = matchedName;
         try { localStorage.setItem(IDENTITY_KEY, CURRENT_USER); } catch(e) {}
 
-        try {
+        if (OPTIONAL_CLOUD_FEATURES) try {
           LOGS_REF.push({
             time: Date.now(),
             iso: new Date().toISOString(),
@@ -3988,10 +3993,18 @@ function setupAudioHandlers() {
 }
 
 function doPlay() {
-  cardAudio.play().catch(err => console.warn('Card play failed:', err));
+  playBtn.disabled = true;
+  cardAudio.play().then(() => {
   cardPlaying = true;
   playBtn.textContent = '❚❚';
   playBtn.style.background = '#e8004e';
+  }).catch(err => {
+    cardPlaying = false;
+    playBtn.textContent = '▶';
+    playBtn.style.background = 'var(--accent)';
+    console.warn('Card play failed:', err);
+    alert('This voice note could not be played. Please try again.');
+  }).finally(() => { playBtn.disabled = false; });
 }
 
 playBtn.addEventListener('click', () => {
