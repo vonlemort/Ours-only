@@ -2436,18 +2436,29 @@ const flowerPhotos = [
     }
 
     const firebaseConfig = {
-      apiKey: "AIzaSyD7Rt9RFyk6DHsaqB_2KIv0QBGPGXYrWPo",
-      authDomain: "notes-8d314.firebaseapp.com",
-      databaseURL: "https://notes-8d314-default-rtdb.firebaseio.com",
-      projectId: "notes-8d314",
-      storageBucket: "notes-8d314.firebasestorage.app",
-      messagingSenderId: "46616929171",
-      appId: "1:46616929171:web:c3981641b271d3e33b3e66"
+      apiKey: "AIzaSyCFd9mW-lFgf2zXaWOGTfuQIPNL-9b5xoo",
+      authDomain: "notes-cbb11.firebaseapp.com",
+      databaseURL: "https://notes-cbb11-default-rtdb.firebaseio.com",
+      projectId: "notes-cbb11",
+      storageBucket: "notes-cbb11.firebasestorage.app",
+      messagingSenderId: "701430907039",
+      appId: "1:701430907039:web:81925855940b401803e2aa"
     };
     firebase.initializeApp(firebaseConfig);
-    firebase.auth().signInAnonymously().catch(console.error);
     let CURRENT_UID = null;
-    firebase.auth().onAuthStateChanged(user => { if (user) CURRENT_UID = user.uid; });
+    let authReadyPromise = null;
+    function ensureFirebaseUser() {
+      const user = firebase.auth().currentUser;
+      if (user) { CURRENT_UID = user.uid; return Promise.resolve(user); }
+      if (!authReadyPromise) {
+        authReadyPromise = firebase.auth().signInAnonymously()
+          .then(result => { CURRENT_UID = result.user.uid; return result.user; })
+          .finally(() => { authReadyPromise = null; });
+      }
+      return authReadyPromise;
+    }
+    firebase.auth().onAuthStateChanged(user => { CURRENT_UID = user ? user.uid : null; });
+    ensureFirebaseUser().catch(error => console.error('Firebase sign-in failed:', error));
     const db = firebase.database();
     const ROOM_ID = 'for-khadeja';
     const TAGS_REF = db.ref(`rooms/${ROOM_ID}/calendarTags`);
@@ -2611,17 +2622,26 @@ const flowerPhotos = [
       const addBtn = document.getElementById('addNoteBtn');
       const input = document.getElementById('noteContent');
 
-      addBtn.addEventListener('click', () => {
+      addBtn.addEventListener('click', async () => {
         const v = input.value.trim();
-        if (!v) return;
-        db.ref(`rooms/${ROOM_ID}/notes`).push({
-          type: 'text', text: v, time: Date.now(), uid: CURRENT_UID || null,
-          sender: CURRENT_USER || null
-        });
-        input.value = '';
+        if (!v || addBtn.disabled) return;
+        addBtn.disabled = true;
+        try {
+          const user = await ensureFirebaseUser();
+          await db.ref(`rooms/${ROOM_ID}/notes`).push({
+            type: 'text', text: v, time: Date.now(), uid: user.uid,
+            sender: CURRENT_USER || null
+          });
+          if (input.value.trim() === v) input.value = '';
+        } catch (error) {
+          console.error('Note save failed:', error);
+          alert('Your note could not be saved. Your text is still here; please try again.');
+        } finally {
+          addBtn.disabled = false;
+        }
       });
 
-      db.ref(`rooms/${ROOM_ID}/notes`).on('value', (snapshot) => {
+      ensureFirebaseUser().then(() => db.ref(`rooms/${ROOM_ID}/notes`).on('value', (snapshot) => {
         notesBoard.innerHTML = '';
         const data = snapshot.val();
         if (!data) return;
@@ -2643,6 +2663,12 @@ const flowerPhotos = [
             </div>`;
           notesBoard.appendChild(card);
         }
+      }, error => {
+        console.error('Note loading failed:', error);
+        alert('Notes could not be loaded. Please refresh and try again.');
+      })).catch(error => {
+        console.error('Note sign-in failed:', error);
+        alert('Could not connect to your notes. Please refresh and try again.');
       });
 
       const songs = [
@@ -3546,6 +3572,10 @@ function showBirthdayCakeIfNeeded() {
       let previewBuffer = null, previewDecCtx = null;
       let isHolding = false;
       let micStream = null;
+      function releaseMic() {
+        if (micStream) micStream.getTracks().forEach(track => track.stop());
+        micStream = null;
+      }
 
       /* ---- Get mic (cached after first grant) ---- */
       async function ensureMic() {
@@ -3635,7 +3665,7 @@ function showBirthdayCakeIfNeeded() {
         isHolding = true;
         try {
           const stream = await ensureMic();
-          if (!isHolding) return;
+          if (!isHolding) { releaseMic(); return; }
 
           // Fresh AudioContext for live waveform
           if (liveAudioCtx) { try { liveAudioCtx.close(); } catch(err){} }
@@ -3689,6 +3719,7 @@ mediaRec = new MediaRecorder(stream, recOptions);
 
       /* ---- After stop: build blob → dataURL → show preview ---- */
       function onRecStop() {
+        releaseMic();
         if (!audioChunks.length) return;
         const mimeType = mediaRec.mimeType || 'audio/webm';
         recordedBlob = new Blob(audioChunks, { type: mimeType });
@@ -3774,10 +3805,17 @@ mediaRec = new MediaRecorder(stream, recOptions);
       });
 
 sendBtn.addEventListener('click', async () => {
-  if (!recordedBlob) return;
+  if (!recordedBlob || sendBtn.disabled) return;
+  const originalSendLabel = sendBtn.textContent;
   sendBtn.disabled = true;
+  holdBtn.disabled = true;
+  cancelBtn.disabled = true;
   sendBtn.textContent = '📤 Uploading…';
   try {
+    const user = await ensureFirebaseUser();
+    if (recordedBlob.size > 10 * 1024 * 1024) {
+      throw new Error('This recording is larger than the 10 MB upload limit.');
+    }
     let peaks = [];
     try {
       const arrayBuf = await recordedBlob.arrayBuffer();
@@ -3801,9 +3839,10 @@ sendBtn.addEventListener('click', async () => {
     const downloadURL = await storageRef.getDownloadURL();
     const dur = previewBuffer ? previewBuffer.duration : 0;
 
-    const ref = db.ref(`rooms/${ROOM_ID}/voicenotes`).push({
+    const ref = db.ref(`rooms/${ROOM_ID}/voicenotes`).push();
+    await ref.set({
       url: downloadURL, duration: dur, peaks: peaks,
-      time: Date.now(), uid: CURRENT_UID || null, sender: CURRENT_USER || null
+      time: Date.now(), uid: user.uid, sender: CURRENT_USER || null
     });
 
     renderVNCard(ref.key, {
@@ -3811,18 +3850,22 @@ sendBtn.addEventListener('click', async () => {
       duration: dur, peaks: peaks, time: Date.now(), sender: CURRENT_USER || null
     }, true);
 
-  } catch (err) {
-    console.error('Upload failed:', err);
-    hint.textContent = 'Upload failed — try again';
-    hint.classList.add('active');
-    setTimeout(() => { hint.textContent = 'Hold to record'; hint.classList.remove('active'); }, 3000);
-  }
   if (previewAudio) { previewAudio.pause(); previewAudio = null; }
   previewBuffer = null; previewPlaying = false;
   prevPlay.textContent = '▶'; prevPlay.style.background = 'var(--accent)';
   preview.classList.remove('show');
   recordedDataURL = null; recordedBlob = null;
-  sendBtn.disabled = false; sendBtn.textContent = '📌 Pin it';
+  } catch (err) {
+    console.error('Upload failed:', err);
+    hint.textContent = err.message && err.message.includes('10 MB')
+      ? err.message : 'Upload failed - your recording is still here. Try again.';
+    hint.classList.add('active');
+  } finally {
+    sendBtn.disabled = false;
+    sendBtn.textContent = originalSendLabel;
+    holdBtn.disabled = false;
+    cancelBtn.disabled = false;
+  }
 });
 
 
@@ -3994,10 +4037,12 @@ playBtn.addEventListener('click', () => {
 
 }
 
+    let voiceNotesSubscription = null;
     function loadVoiceNotes() {
       const board = document.getElementById('vnNotesBoard');
-      if (!board) return;
-      db.ref(`rooms/${ROOM_ID}/voicenotes`).on('value', snap => {
+      if (!board || voiceNotesSubscription) return;
+      voiceNotesSubscription = ensureFirebaseUser().then(() => {
+        db.ref(`rooms/${ROOM_ID}/voicenotes`).on('value', snap => {
         const data = snap.val();
         if (!data) { board.innerHTML = ''; return; }
         const entries = Object.entries(data).sort((a, b) => (b[1].time || 0) - (a[1].time || 0));
@@ -4005,6 +4050,15 @@ playBtn.addEventListener('click', () => {
         for (const [key, n] of entries) {
           renderVNCard(key, n, false);
         }
+        }, error => {
+          voiceNotesSubscription = null;
+          console.error('Voice note loading failed:', error);
+          alert('Voice notes could not be loaded. Please refresh and try again.');
+        });
+      }).catch(error => {
+        voiceNotesSubscription = null;
+        console.error('Voice note sign-in failed:', error);
+        alert('Could not connect to your voice notes. Please try again.');
       });
     }
 
