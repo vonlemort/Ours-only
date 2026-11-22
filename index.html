@@ -2413,7 +2413,11 @@ const flowerPhotos = [
         }
       }, error => {
         console.error('Note loading failed:', error);
-        alert('Notes could not be loaded. Please refresh and try again.');
+        if (/permission.?denied/i.test(String(error.code || error.message || ''))) {
+          notesBoard.textContent = 'This browser needs one-time approval to open your private notes. Browser ID: ' + (CURRENT_UID || 'not available - refresh and try again');
+        } else {
+          notesBoard.textContent = 'Notes could not be loaded. Please refresh and try again.';
+        }
       })).catch(error => {
         console.error('Note sign-in failed:', error);
         alert('Could not connect to your notes. Please refresh and try again.');
